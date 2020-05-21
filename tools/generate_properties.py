@@ -6,7 +6,7 @@ prop = []
 rule = []
 table = []
 
-for x in range(0x40000):
+for x in range(0x20000):
     prop.append('XX')
 
 with open('LineBreak.txt', 'r') as file:
@@ -16,7 +16,7 @@ with open('LineBreak.txt', 'r') as file:
         if not line.startswith('#'):
             m = re.search("([0-9A-F]{1,6})\.\.([0-9A-F]{1,6})\;([0-9A-Z]{2,})", line)
             if m:
-                if int(m.group(2), 16) >= 0x40000:
+                if int(m.group(2), 16) >= 0x20000:
                     break
                 length = int(m.group(2), 16) - int(m.group(1), 16) + 1
                 s = int(m.group(1), 16)
@@ -25,18 +25,70 @@ with open('LineBreak.txt', 'r') as file:
             else:
                 m = re.search("([0-9A-F]{1,6})\;([0-9A-Z]{2,})", line)
                 if m:
-                    if int(m.group(1), 16) >= 0x40000:
+                    if int(m.group(1), 16) >= 0x20000:
                         break
                     prop[int(m.group(1), 16)] = m.group(2)
         line = file.readline()
 
+#prop_type = sorted([x for x in set(prop)])
 prop_type = sorted([x for x in set(prop)])
-count = 1
+prop_type.append("B2_SP")
+prop_type.append("CL_CP_SP")
+prop_type.append("CM_CM")
+prop_type.append("HL_HY")
+prop_type.append("OP_SP")
+prop_type.append("QU_SP")
+prop_type.append("ZW_SP")
+prop_type.append("ZWJ_ZWJ")
 for i in prop_type:
     for j in prop_type:
+        # combine state
+        # (LB8)
+        if i in ("ZW", "ZW_SP") and j == "SP":
+            rule.append("ZW_SP")
+            continue
+        # (LB9)
+        if i == "CM_CM" and j == "CM":
+            rule.append("CM_CM")
+            continue
+        if i == "ZWJ_ZWJ" and j == "ZWJ":
+            rule.append("ZWJ_ZWJ")
+            continue
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZE") and j == "CM":
+            rule.append("CM_CM")
+            continue
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZE") and j == "ZWJ":
+            rule.append("ZWJ_ZWJ")
+            continue
+
+        # (LB14)
+        if i in ("OP", "OP_SP") and j == "SP":
+            rule.append("OP_SP")
+            continue
+        # (LB15)
+        if i in ("QU", "QU_SP") and j == "SP":
+            rule.append("QU_SP")
+            continue
+        # (LB16)
+        if i in ("CL_CP_SP", "CL", "SP") and j == "SP":
+            rule.append("CL_CP_SP")
+            continue
+        # (LB17)
+        if i in ("B2", "B2_SP") and j == "SP":
+            rule.append("B2_SP")
+            continue
+        # (LB21a)
+        if i == "HL" and j in ("HY", "BA"):
+            rule.append("HL_HY")
+            continue
+        # (LB30a)
+        #if i == "RI" and j == "RI"):
+        #    rule.append("RI_RI")
+        #    continue
+
         # LB2
         # LB3
-        # LB4 Always break after hard line breaks.
+        # LB4
         if i == "BK":
             rule.append("!")
             continue
@@ -60,8 +112,8 @@ for i in prop_type:
             continue
 
         # LB8
-        if i == "ZW" and j == "SP":
-            rule.append("LB8")
+        if i in ("ZW", "ZW_SP"):
+            rule.append("/")
             continue
 
         # LB8a
@@ -70,6 +122,12 @@ for i in prop_type:
             continue
 
         # LB9
+        if i == "CM_CM":
+            rule.append("CM")
+            continue
+        if i == "ZWJ_ZWJ":
+            rule.append("ZWJ")
+            continue
 
         # LB10
 
@@ -97,29 +155,23 @@ for i in prop_type:
             continue
 
         # LB14
-        if i == "OP" and j == "SP":
-            rule.append("LB14")
+        if i in ("OP", "OP_SP"):
+            rule.append("x")
             continue
 
         # LB15
-        if i == "QU" and j == "SP":
-            rule.append("LB15")
+        if i in ("QU", "QU_SP") and j == "OP":
+            rule.append("x")
             continue
 
         # LB 16
-        if i in ("CL", "CP") and j == "NS":
+        if i in ("CL", "CP", "CL_CP_SP") and j == "NS":
             rule.append("x")
-            continue
-        if i in ("CL", "CP") and j == "SP":
-            rule.append("LB16")
             continue
 
         # LB17
-        if i == "B2" and j == "B2":
+        if i in ("B2", "B2_SP") and j == "B2":
             rule.append("x")
-            continue
-        if i == "B2" and j == "SP":
-            rule.append("LB17")
             continue
 
         # LB18
@@ -146,8 +198,8 @@ for i in prop_type:
             continue
 
         # LB21a
-        if i == "HL" and j in ("HY", "BA"):
-            rule.append("LB21a")
+        if i == "HL_HY":
+            rule.append("x")
             continue
 
         # LB21b
@@ -260,16 +312,15 @@ for i in prop_type:
             rule.append("x")
             continue
 
-        # LB30
+        # XXX LB30
         if i in ("AL", "HL", "NU") and j == "OP":
-            rule.append("LB30")
+            rule.append("x")
             continue
-        # XXX
+        if j in ("AL", "HL", "NU") and i == "CP":
+            rule.append("x")
+            continue
 
         # LB30a
-        if i == "RI" and j == "RI":
-            rule.append("LB30a")
-            continue
 
         # LB30b
         if i == "EB" and j == "EM":
@@ -278,7 +329,7 @@ for i in prop_type:
 
         rule.append("/")
 
-prop_type = sorted([x for x in set(prop)])
+#prop_type = sorted([x for x in set(prop)])
 prop_len = len(prop_type)
 count = 1
 for i in prop_type:
@@ -288,7 +339,7 @@ for i in prop_type:
 print ("pub const PROP_COUNT: usize = %d;" % (count - 1));
 print()
 
-for a in range(256):
+for a in range(128):
     first_value = prop[a * 1024]
     generate_table =False
     for i in range(1024):
@@ -300,19 +351,14 @@ for a in range(256):
        table.append("UAX14_PROPERTIES_%s" % first_value)
        continue
      
-    print ("#[rustfmt::skip]")
     print ("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % str(a))
-    for i in range(int(1024 / 16)):
-        print(" ", end="")
-        for j in range(16):
-            print(" %s," % prop[a * 1024 + j + i * 16], end="")
-        print()
+    for i in range(int(1024)):
+        print(" %s," % prop[a * 1024 + i], end="")
     print ("];")
     table.append("UAX14_PROPERTIES_%s" % str(a))
     print ()
 
 for t in ["ID", "SG", "XX"]:
-    print ("#[rustfmt::skip]")
     print ("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % t)
     for i in range(int(1024 / 16)):
         print(" ", end="")
@@ -322,24 +368,33 @@ for t in ["ID", "SG", "XX"]:
     print ("];")
     print ()
 
-print ("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 256] = [")
+print ("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [")
 for i in table:
     print("  &%s," % i)
 print ("];")
 
 print ("pub const UAX14_RULE_TABLE: [i8; %d] = [" % len(rule))
 count = 0
+line = 0
+print ("// %s" % prop_type[line])
 for i in rule:
-    value = -128; # handing state machine
+    value = 0; # handing state machine
     if i == "x":
         value = -1
-    if i == "/":
-        value = -2
-    if i == "!":
-        value = -3
-    print(" %s," % str(value), end="")
+    elif i == "/":
+        value = -128
+    elif i == "!":
+        value = -128
+    else:
+        value = "%s as i8" % i
+    print(" %s /* %s */," % (str(value), prop_type[count]), end="")
     count = count + 1
-    if count >= prop_len:
+    if count >= len(prop_type):
         print ()
         count = 0
+        line = line + 1
+        try:
+             print ("// %s" % prop_type[line])
+        except:
+             pass
 print ("];")

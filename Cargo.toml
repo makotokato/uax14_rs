@@ -1,9 +1,15 @@
 [package]
-name = "uax14-rs"
+name = "uax14_rs"
+description = "Implement UAX#14 in Rust"
 version = "0.1.0"
 authors = ["Makoto Kato <m_kato@ga2.so-net.ne.jp>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/makotokato/uax14_rs"
+keywords = ["unicode"]
+categories = ["text-processing"]
 
 [dependencies]
+
+[profile.release]
+lto = true

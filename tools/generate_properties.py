@@ -175,7 +175,7 @@ for i in prop_type:
             continue
 
         # LB18
-        if i == "SP":
+        if i == "SP" or i in ("B2_SP", "QU_SP", "CL_CP_SP"):
             rule.append("/")
             continue
 

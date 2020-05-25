@@ -35,52 +35,24 @@ prop_type = sorted([x for x in set(prop)])
 prop_type.append("B2_SP")
 prop_type.append("CL_CP_SP")
 prop_type.append("HL_HY")
-prop_type.append("OP_SP")
 prop_type.append("QU_SP")
-prop_type.append("ZW_SP")
-prop_type.append("ZWJ_ZWJ")
 for i in prop_type:
+    back_i = i;
     for j in prop_type:
+        i = back_i
         # combine state
-        # (LB8)
-        if i in ("ZW", "ZW_SP") and j == "SP":
-            rule.append("ZW_SP")
-            continue
         # (LB9)
-        if i == "ZWJ_ZWJ" and j == "ZWJ":
-            rule.append("ZWJ_ZWJ")
-            continue
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZE") and j == "CM":
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP") and j == "CM":
             rule.append(i)
             continue
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZE") and j == "ZWJ":
-            rule.append("ZWJ_ZWJ")
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW") and j == "ZWJ":
+            rule.append(i)
             continue
 
-        # (LB14)
-        if i in ("OP", "OP_SP") and j == "SP":
-            rule.append("OP_SP")
-            continue
         # (LB15)
         if i in ("QU", "QU_SP") and j == "SP":
             rule.append("QU_SP")
             continue
-        # (LB16)
-        if i in ("CL", "CP", "CL_CP_SP") and j == "SP":
-            rule.append("CL_CP_SP")
-            continue
-        # (LB17)
-        if i in ("B2", "B2_SP") and j == "SP":
-            rule.append("B2_SP")
-            continue
-        # (LB21a)
-        if i == "HL" and j in ("HY", "BA"):
-            rule.append("HL_HY")
-            continue
-        # (LB30a)
-        #if i == "RI" and j == "RI"):
-        #    rule.append("RI_RI")
-        #    continue
 
         # AI
         if i == "AI":
@@ -93,6 +65,12 @@ for i in prop_type:
             i = "NS"
         if j == "CJ":
             j = "NS"
+
+        # SA
+        if i == "SA":
+            i = "AL"
+        if j == "SA":
+            j = "AL"
 
         # LB1
         if i == "XX":
@@ -121,12 +99,26 @@ for i in prop_type:
             continue
 
         # LB7
+        if j == "SP":
+            # (LB8)
+            if i == "ZW":
+                rule.append(i)
+                continue
+            # (LB14)
+            if i == "OP":
+                rule.append(i)
+                continue
+            # (LB17)
+            if i in ("B2", "B2_SP"):
+                rule.append("B2_SP")
+                continue
+
         if j in ("SP", "ZW"):
             rule.append("x")
             continue
 
         # LB8
-        if i in ("ZW", "ZW_SP"):
+        if i in ("ZW"):
             rule.append("/")
             continue
 
@@ -136,14 +128,18 @@ for i in prop_type:
             continue
 
         # LB9
-        if i == "CM":
-            i = "AL"
-        #if j == "CM":
-        #    j = "AL"
-        if i == "ZWJ_ZWJ":
-            i = "ZWJ"
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW") and j == "CM":
+            rule.append(i)
+            continue
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW") and j == "ZWJ":
+            rule.append(i)
+            continue
 
         # LB10
+        if i == "CM":
+            i = "AL"
+        if i == "ZWJ":
+            i = "AL"
 
         # LB11
         if i == "WJ":
@@ -169,7 +165,7 @@ for i in prop_type:
             continue
 
         # LB14
-        if i in ("OP", "OP_SP"):
+        if i in ("OP"):
             rule.append("x")
             continue
 
@@ -177,29 +173,41 @@ for i in prop_type:
         if i in ("QU", "QU_SP") and j == "OP":
             rule.append("x")
             continue
+        if i == "QU_SP":
+            i = "SP"
 
         # LB 16
         if i in ("CL", "CP", "CL_CP_SP") and j == "NS":
             rule.append("x")
             continue
+        if i == "CL_CP_SP":
+            i = "SP"
 
         # LB17
         if i in ("B2", "B2_SP") and j == "B2":
             rule.append("x")
             continue
+        if i == "B2_SP":
+            i = "SP"
 
         # LB18
-        if i in ("SP", "B2_SP", "QU_SP", "CL_CP_SP"):
+        if i == "SP":
             rule.append("/")
             continue
 
         # LB19
-        if i == "QU" or j == "QU":
+        if i == "QU":
+            rule.append("x")
+            continue
+        if j == "QU":
             rule.append("x")
             continue
 
         # LB20
-        if i == "CB" or j == "CB":
+        if i == "CB":
+            rule.append("/")
+            continue
+        if j == "CB":
             rule.append("/")
             continue
 
@@ -212,6 +220,9 @@ for i in prop_type:
             continue
 
         # LB21a
+        if i == "HL" and j in ("HY", "BA"):
+            rule.append("HL_HY")
+            continue
         if i == "HL_HY":
             rule.append("x")
             continue

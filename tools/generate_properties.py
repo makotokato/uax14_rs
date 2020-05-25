@@ -40,7 +40,6 @@ prop_type.append("OP_SP")
 prop_type.append("QU_SP")
 prop_type.append("ZW_SP")
 prop_type.append("ZWJ_ZWJ")
-prop_type.append("AL_CM")
 for i in prop_type:
     for j in prop_type:
         # combine state
@@ -49,23 +48,14 @@ for i in prop_type:
             rule.append("ZW_SP")
             continue
         # (LB9)
-        if i == "AL_CM" and j == "CM":
-            rule.append("AL_CM")
-            continue
         if i == "CM_CM" and j == "CM":
             rule.append("CM_CM")
             continue
         if i == "ZWJ_ZWJ" and j == "ZWJ":
             rule.append("ZWJ_ZWJ")
             continue
-        if i == "AL" and j == "CM":
-            rule.append("AL_CM")
-            continue
-        if i == "CB" and j == "CM":
-            rule.append("CB")
-            continue
         if i not in ("BK", "CR", "LF", "NL", "SP", "ZE") and j == "CM":
-            rule.append("CM_CM")
+            rule.append(i)
             continue
         if i not in ("BK", "CR", "LF", "NL", "SP", "ZE") and j == "ZWJ":
             rule.append("ZWJ_ZWJ")
@@ -132,8 +122,6 @@ for i in prop_type:
             continue
 
         # LB9
-        if i == "AL_CM":
-            i = "AL"
         if i == "CM_CM":
             i = "AL"
         #    rule.append("/")

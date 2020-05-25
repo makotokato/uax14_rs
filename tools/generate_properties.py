@@ -34,7 +34,6 @@ with open('LineBreak.txt', 'r') as file:
 prop_type = sorted([x for x in set(prop)])
 prop_type.append("B2_SP")
 prop_type.append("CL_CP_SP")
-prop_type.append("CM_CM")
 prop_type.append("HL_HY")
 prop_type.append("OP_SP")
 prop_type.append("QU_SP")
@@ -48,9 +47,6 @@ for i in prop_type:
             rule.append("ZW_SP")
             continue
         # (LB9)
-        if i == "CM_CM" and j == "CM":
-            rule.append("CM_CM")
-            continue
         if i == "ZWJ_ZWJ" and j == "ZWJ":
             rule.append("ZWJ_ZWJ")
             continue
@@ -70,7 +66,7 @@ for i in prop_type:
             rule.append("QU_SP")
             continue
         # (LB16)
-        if i in ("CL_CP_SP", "CL", "SP") and j == "SP":
+        if i in ("CL", "CP", "CL_CP_SP") and j == "SP":
             rule.append("CL_CP_SP")
             continue
         # (LB17)
@@ -122,10 +118,6 @@ for i in prop_type:
             continue
 
         # LB9
-        if i == "CM_CM":
-            i = "AL"
-        #    rule.append("/")
-        #    continue
         if i == "CM":
             i = "AL"
         #if j == "CM":
@@ -288,7 +280,7 @@ for i in prop_type:
         if i == "JL" and j in ("JL", "JV", "H2", "H3"):
             rule.append("x")
             continue
-        if i in ("JV", "H2") and j in ("JL", "JV"):
+        if i in ("JV", "H2") and j in ("JV", "JT"):
             rule.append("x")
             continue
         if i in ("JT", "H3") and j == "JT":

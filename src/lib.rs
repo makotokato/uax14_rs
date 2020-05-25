@@ -77,7 +77,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
 
             // Resolve state.
             let mut break_state = get_break_state(current_prop, next_prop);
-            if break_state >= 0 {
+            if break_state >= 0 as i8 {
                 loop {
                     let it = self.iter.next();
                     if it.is_none() {

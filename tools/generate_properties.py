@@ -183,7 +183,7 @@ for i in prop_type:
             continue
 
         # LB18
-        if i == "SP" or i in ("B2_SP", "QU_SP", "CL_CP_SP"):
+        if i in ("SP", "B2_SP", "QU_SP", "CL_CP_SP"):
             rule.append("/")
             continue
 
@@ -224,7 +224,7 @@ for i in prop_type:
         if i in ("AL", "HL") and j == "NU":
             rule.append("x")
             continue
-        if j in ("AL", "HL") and j == "NU":
+        if i == "NU" and j in ("AL", "HL"):
             rule.append("x")
             continue
 
@@ -232,7 +232,7 @@ for i in prop_type:
         if i == "PR" and j in ("ID", "EB", "EM"):
             rule.append("x")
             continue
-        if i in ("ID", "EB", "EM") and j == "PR":
+        if i in ("ID", "EB", "EM") and j == "PO":
             rule.append("x")
             continue
 

@@ -3080,8 +3080,8 @@ pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [
 ];
 pub const UAX14_RULE_TABLE: [i8; 2500] = [
     // AI
-    -128,          /* AI */
-    -128,          /* AL */
+    -1,            /* AI */
+    -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */
     -128,          /* BB */
@@ -3089,7 +3089,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* CB */
     -1,            /* CJ */
     -1,            /* CL */
-    AI as i8,      /* CM */
+    AL as i8,      /* CM */
     -1,            /* CP */
     -1,            /* CR */
     -128,          /* EB */
@@ -3098,7 +3098,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -1,            /* GL */
     -128,          /* H2 */
     -128,          /* H3 */
-    -128,          /* HL */
+    -1,            /* HL */
     -1,            /* HY */
     -128,          /* ID */
     -1,            /* IN */
@@ -3109,10 +3109,10 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -1,            /* LF */
     -1,            /* NL */
     -1,            /* NS */
-    -128,          /* NU */
-    -128,          /* OP */
-    -128,          /* PO */
-    -128,          /* PR */
+    -1,            /* NU */
+    -1,            /* OP */
+    -1,            /* PO */
+    -1,            /* PR */
     -1,            /* QU */
     -128,          /* RI */
     -128,          /* SA */
@@ -3131,7 +3131,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* ZW_SP */
     -128,          /* ZWJ_ZWJ */
     // AL
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */
@@ -3539,7 +3539,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,           /* ZW_SP */
     -128,           /* ZWJ_ZWJ */
     // CM
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */
@@ -3590,7 +3590,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* ZW_SP */
     -128,          /* ZWJ_ZWJ */
     // CP
-    -128,           /* AI */
+    -1,             /* AI */
     -1,             /* AL */
     -128,           /* B2 */
     -1,             /* BA */
@@ -3998,7 +3998,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* ZW_SP */
     -128,          /* ZWJ_ZWJ */
     // HL
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     HL_HY as i8,   /* BA */
@@ -4202,7 +4202,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* ZW_SP */
     -128,          /* ZWJ_ZWJ */
     // IS
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */
@@ -4559,7 +4559,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* ZW_SP */
     -128,          /* ZWJ_ZWJ */
     // NU
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */
@@ -4661,7 +4661,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -1,            /* ZW_SP */
     -1,            /* ZWJ_ZWJ */
     // PO
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */
@@ -4712,7 +4712,7 @@ pub const UAX14_RULE_TABLE: [i8; 2500] = [
     -128,          /* ZW_SP */
     -128,          /* ZWJ_ZWJ */
     // PR
-    -128,          /* AI */
+    -1,            /* AI */
     -1,            /* AL */
     -128,          /* B2 */
     -1,            /* BA */

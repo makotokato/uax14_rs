@@ -269,6 +269,8 @@ mod tests {
         assert_eq!(get_linebreak_property('\u{20000}'), ID);
         assert_eq!(get_linebreak_property('\u{e0020}'), CM);
         assert_eq!(get_linebreak_property('\u{3041}'), CJ);
+        assert_eq!(get_linebreak_property('\u{0025}'), PO);
+        assert_eq!(get_linebreak_property('\u{00A7}'), AI);
     }
 
     #[test]

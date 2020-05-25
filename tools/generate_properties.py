@@ -82,7 +82,13 @@ for i in prop_type:
         #    rule.append("RI_RI")
         #    continue
 
-        # break-stric -> NS, others -> ID
+        # AI
+        if i == "AI":
+            i = "AL"
+        if j == "AI":
+            j = "AL"
+
+        # break-strict -> NS, others -> ID
         if i == "CJ":
             i = "NS"
         if j == "CJ":

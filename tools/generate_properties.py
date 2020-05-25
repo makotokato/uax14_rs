@@ -82,6 +82,18 @@ for i in prop_type:
         #    rule.append("RI_RI")
         #    continue
 
+        # break-stric -> NS, others -> ID
+        if i == "CJ":
+            i = "NS"
+        if j == "CJ":
+            j = "NS"
+
+        # LB1
+        if i == "XX":
+            i == "AL"
+        if j == "XX":
+            j == "AL"
+
         # LB2
         # LB3
         # LB4

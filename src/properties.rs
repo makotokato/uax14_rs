@@ -3117,7 +3117,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     AL as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -3165,7 +3165,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     AL as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -3549,7 +3549,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     CM as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -3597,7 +3597,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     CL_CP_SP as i8, /* SP */
     -1,             /* SY */
     -1,             /* WJ */
-    -128,           /* XX */
+    -1,             /* XX */
     -1,             /* ZW */
     CP as i8,       /* ZWJ */
     -128,           /* B2_SP */
@@ -3981,7 +3981,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     HL as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -4173,7 +4173,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     IS as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -4509,7 +4509,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     NU as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -4605,7 +4605,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     PO as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -4653,7 +4653,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     PR as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -4797,7 +4797,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
     AL as i8, /* ZWJ */
     -128,     /* B2_SP */
@@ -4997,8 +4997,8 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* HL_HY */
     -1,       /* QU_SP */
     // XX
-    -128,     /* AI */
-    -128,     /* AL */
+    -1,       /* AI */
+    -1,       /* AL */
     -128,     /* B2 */
     -1,       /* BA */
     -128,     /* BB */
@@ -5006,7 +5006,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -128,     /* CB */
     -1,       /* CJ */
     -1,       /* CL */
-    XX as i8, /* CM */
+    AL as i8, /* CM */
     -1,       /* CP */
     -1,       /* CR */
     -128,     /* EB */
@@ -5015,7 +5015,7 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* GL */
     -128,     /* H2 */
     -128,     /* H3 */
-    -128,     /* HL */
+    -1,       /* HL */
     -1,       /* HY */
     -128,     /* ID */
     -1,       /* IN */
@@ -5026,20 +5026,20 @@ pub const UAX14_RULE_TABLE: [i8; 2209] = [
     -1,       /* LF */
     -1,       /* NL */
     -1,       /* NS */
-    -128,     /* NU */
-    -128,     /* OP */
-    -128,     /* PO */
-    -128,     /* PR */
+    -1,       /* NU */
+    -1,       /* OP */
+    -1,       /* PO */
+    -1,       /* PR */
     -1,       /* QU */
     -128,     /* RI */
-    -128,     /* SA */
+    -1,       /* SA */
     -128,     /* SG */
     -1,       /* SP */
     -1,       /* SY */
     -1,       /* WJ */
-    -128,     /* XX */
+    -1,       /* XX */
     -1,       /* ZW */
-    XX as i8, /* ZWJ */
+    AL as i8, /* ZWJ */
     -128,     /* B2_SP */
     -128,     /* CL_CP_SP */
     -128,     /* HL_HY */

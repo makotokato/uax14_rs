@@ -60,10 +60,10 @@ for i in prop_type:
             j = "AL"
 
         # LB1
-        #if i == "XX":
-        #    i == "AL"
-        #if j == "XX":
-        #    j == "AL"
+        if i == "XX":
+            i = "AL"
+        if j == "XX":
+            j = "AL"
 
         # LB2
         # LB3

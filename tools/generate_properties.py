@@ -60,10 +60,10 @@ for i in prop_type:
             j = "AL"
 
         # LB1
-        if i == "XX":
-            i == "AL"
-        if j == "XX":
-            j == "AL"
+        #if i == "XX":
+        #    i == "AL"
+        #if j == "XX":
+        #    j == "AL"
 
         # LB2
         # LB3
@@ -150,7 +150,7 @@ for i in prop_type:
             continue
 
         # LB12a
-        if i not in ("SP", "BA", "HY", "CL_CP_SP") and j == "GL":
+        if i not in ("SP", "BA", "HY", "B2_SP", "QU_SP", "CL_CP_SP") and j == "GL":
             rule.append("x")
             continue
 

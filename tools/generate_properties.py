@@ -28,7 +28,7 @@ with open('LineBreak.txt', 'r') as file:
                     if int(m.group(1), 16) >= 0x20000:
                         break
                     # for LB30
-                    if int(m.group(1), 16) in (0xff08, 0xff3b, 0xff5b, 0xff5f):
+                    if int(m.group(1), 16) in (0x2329, 0xff08, 0xff3b, 0xff5b, 0xff5f):
                         prop[int(m.group(1), 16)] = "OP_EA"
                     else:
                         prop[int(m.group(1), 16)] = m.group(2)
@@ -105,7 +105,7 @@ for i in prop_type:
                 rule.append("QU_SP")
                 continue
             # (LB16)
-            if i in ("CL", "CP", "CL_CP_SP"):
+            if i in ("CL", "CP", "CP_EA", "CL_CP_SP"):
                 rule.append("CL_CP_SP")
                 continue
             # (LB17)
@@ -160,7 +160,7 @@ for i in prop_type:
             continue
 
         # LB13
-        if j in ("CL", "CP", "EX", "IS", "SY"):
+        if j in ("CL", "CP", "CP_EA", "EX", "IS", "SY"):
             rule.append("x")
             continue
 
@@ -177,7 +177,7 @@ for i in prop_type:
             i = "SP"
 
         # LB 16
-        if i in ("CL", "CP", "CL_CP_SP") and j == "NS":
+        if i in ("CL", "CP", "CP_EA", "CL_CP_SP") and j == "NS":
             rule.append("x")
             continue
         if i == "CL_CP_SP":
@@ -266,13 +266,13 @@ for i in prop_type:
         if i == "CL" and j == "PO":
             rule.append("x")
             continue
-        if i == "CP" and j == "PO":
+        if i in ("CP", "CP_WA") and j == "PO":
             rule.append("x")
             continue
         if i == "CL" and j == "PR":
             rule.append("x")
             continue
-        if i == "CP" and j == "PR":
+        if i in ("CP", "CP_EA") and j == "PR":
             rule.append("x")
             continue
         if i == "NU" and j == "PO":

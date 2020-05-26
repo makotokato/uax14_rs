@@ -451,7 +451,7 @@ pub const UAX14_PROPERTIES_8: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, IN, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL, OP, CL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL,
-    AL, AL, AL, ID, ID, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL, AL, AL, AL, AL,
+    AL, AL, AL, ID, ID, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP_EA, CL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
@@ -460,7 +460,7 @@ pub const UAX14_PROPERTIES_8: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, ID, ID, ID, ID, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, ID, ID, ID, ID, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
 ];
 
 pub const UAX14_PROPERTIES_9: [u8; 1024] = [

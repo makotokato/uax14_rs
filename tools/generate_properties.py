@@ -263,48 +263,67 @@ for i in prop_type:
             continue
 
         # LB25
-        if i == "CL" and j == "PO":
-            rule.append("x")
-            continue
-        if i in ("CP", "CP_WA") and j == "PO":
-            rule.append("x")
-            continue
-        if i == "CL" and j == "PR":
-            rule.append("x")
-            continue
-        if i in ("CP", "CP_EA") and j == "PR":
-            rule.append("x")
-            continue
+        #if i in ("PR", "PO") and j in ("OP", "HY"):
+        #    rule.append("LB25_NU_PRE")
+        #    continue
+        #if i in ("LB25_NU_PRE", "PR", "PO", "OP", "HY") and j == "NU"
+        #    rule.append("LB25_NU")
+        #    continue
+        #if i in ("LB25_NU", "NU") and j in ("NU", "SY", "IS"):
+        #    rule.append("LB25_NU")
+        #    continue
+        #if i in ("LB25_NU") and j in ("CL", "CP"):
+        #    rule.append("LB25_NU_SUF")
+        #    continue
+        #if i in ("LB25_NU") and j in ("CL", "CP", "PR", "PO"):
+        #    rule.append("x")
+        #    continue
+        #if i in ("LB25_NU_SUF") and j in ("PR", "PO"):
+        #    rule.append("x")
+        #    continue
+
+        #if i == "CL" and j == "PO":
+        #    rule.append("x")
+        #    continue
+        #if i in ("CP", "CP_WA") and j == "PO":
+        #    rule.append("x")
+        #    continue
+        # if i == "CL" and j == "PR":
+        #    rule.append("x")
+        #    continue
+        #if i in ("CP", "CP_EA") and j == "PR":
+        #    rule.append("x")
+        #    continue
         if i == "NU" and j == "PO":
             rule.append("x")
             continue
         if i == "NU" and j == "PR":
             rule.append("x")
             continue
-        if i == "PO" and j in ("OP", "OP_EA"):
-            rule.append("x")
-            continue
+        #if i == "PO" and j in ("OP", "OP_EA"):
+        #    rule.append("x")
+        #    continue
         if i == "PO" and j == "NU":
             rule.append("x")
             continue
-        if i == "PR" and j in ("OP", "OP_EA"):
-            rule.append("x")
-            continue
+        #if i == "PR" and j in ("OP", "OP_EA"):
+        #    rule.append("x")
+        #    continue
         if i == "PR" and j == "NU":
             rule.append("x")
             continue
         if i == "HY" and j == "NU":
             rule.append("x")
             continue
-        if i == "IS" and j == "NU":
-            rule.append("x")
-            continue
+        # if i == "IS" and j == "NU":
+        #    rule.append("x")
+        #    continue
         if i == "NU" and j == "NU":
             rule.append("x")
             continue
-        if i == "SY" and j == "NU":
-            rule.append("x")
-            continue
+        #if i == "SY" and j == "NU":
+        #    rule.append("x")
+        #    continue
 
         # LB26
         if i == "JL" and j in ("JL", "JV", "H2", "H3"):

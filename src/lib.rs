@@ -65,6 +65,96 @@ impl<'a> Iterator for LineBreakIterator<'a> {
 
         let mut current_prop = get_linebreak_property(self.current.unwrap().1);
         loop {
+            // Handle LB25
+            // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
+            if current_prop == PR
+                || current_prop == PO
+                || current_prop == OP
+                || current_prop == OP_EA
+                || current_prop == HY
+                || current_prop == NU
+            {
+                let backup = self.iter.clone();
+                let mut current = self.current;
+                let mut state = current_prop;
+
+                let mut prev = current;
+                let mut prev_state = state;
+
+                if state == PR || state == PO {
+                    current = self.iter.next();
+                    if current.is_some() {
+                        state = get_linebreak_property(current.unwrap().1);
+                    }
+                    // If reaching EOF, restore iterator
+                }
+                if state == OP || state == HY || state == OP_EA {
+                    prev = current;
+                    prev_state = state;
+
+                    current = self.iter.next();
+                    if current.is_some() {
+                        state = get_linebreak_property(current.unwrap().1);
+                    }
+                    // If reaching EOF, restore iterator
+                }
+                if state == NU {
+                    let mut backup = self.iter.clone();
+                    prev = current;
+                    prev_state = state;
+
+                    current = self.iter.next();
+                    if current.is_none() {
+                        // EOF
+                        let t = prev.unwrap();
+                        self.current = None;
+                        return Some(t.0 + t.1.len_utf8());
+                    }
+                    state = get_linebreak_property(current.unwrap().1);
+                    loop {
+                        if state == NU || state == SY || state == IS {
+                            backup = self.iter.clone();
+                            prev = current;
+                            prev_state = state;
+
+                            current = self.iter.next();
+                            if current.is_none() {
+                                // EOF
+                                let t = prev.unwrap();
+                                self.current = None;
+                                return Some(t.0 + t.1.len_utf8());
+                            }
+                            state = get_linebreak_property(current.unwrap().1);
+                            continue;
+                        }
+                        break;
+                    }
+                    if state == CL || state == CP {
+                        backup = self.iter.clone();
+                        prev = current;
+                        prev_state = state;
+
+                        current = self.iter.next();
+                        if current.is_some() {
+                            state = get_linebreak_property(current.unwrap().1);
+                        }
+                        // If reaching EOF, restore iterator
+                    }
+                    if state == PR || state == PO {
+                        self.current = current;
+                        current_prop = state;
+                        continue;
+                    }
+                    self.current = prev;
+                    current_prop = prev_state;
+                    // Restore iterator that is NU/CL/CP position.
+                    self.iter = backup;
+                } else {
+                    // Not match for LB25
+                    self.iter = backup;
+                }
+            }
+
             let next = self.iter.next();
             if next.is_none() {
                 // EOF
@@ -381,44 +471,44 @@ mod tests {
 
         // LB15
         iter = LineBreakIterator::new("abc\u{0022}  (def");
-        //assert_eq!(Some(10), iter.next());
+        assert_eq!(Some(10), iter.next());
 
         let input: [u8; 10] = [0x61, 0x62, 0x63, 0x22, 0x20, 0x20, 0x28, 0x64, 0x65, 0x66];
         let mut iter_u8 = LineBreakIteratorU8::new(&input);
-        //assert_eq!(Some(10), iter_u8.next());
+        assert_eq!(Some(10), iter_u8.next());
 
         let input: [u16; 10] = [0x61, 0x62, 0x63, 0x22, 0x20, 0x20, 0x28, 0x64, 0x65, 0x66];
         let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
-        //assert_eq!(Some(10), iter_u16.next());
+        assert_eq!(Some(10), iter_u16.next());
 
         // LB16
         iter = LineBreakIterator::new("\u{0029}\u{203C}");
         assert_eq!(Some(4), iter.next());
         iter = LineBreakIterator::new("\u{0029}  \u{203C}");
-        //assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
 
         let input: [u16; 4] = [0x29, 0x20, 0x20, 0x203c];
         let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
-        //assert_eq!(Some(4), iter_u16.next());
+        assert_eq!(Some(4), iter_u16.next());
 
         // LB17
         iter = LineBreakIterator::new("\u{2014}\u{2014}aa");
         assert_eq!(Some(6), iter.next());
         iter = LineBreakIterator::new("\u{2014}  \u{2014}aa");
-        //assert_eq!(Some(7), iter.next());
+        assert_eq!(Some(8), iter.next());
 
         iter = LineBreakIterator::new("\u{2014}\u{2014}  \u{2014}\u{2014}123 abc");
-        //assert_eq!(Some(14), iter.next());
-        //assert_eq!(Some(18), iter.next());
-        //assert_eq!(Some(21), iter.next());
+        assert_eq!(Some(14), iter.next());
+        assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
 
         let input: [u16; 13] = [
             0x2014, 0x2014, 0x20, 0x20, 0x2014, 0x2014, 0x31, 0x32, 0x33, 0x20, 0x61, 0x62, 0x63,
         ];
         let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
-        //assert_eq!(Some(6), iter_u16.next());
+        assert_eq!(Some(6), iter_u16.next());
 
         iter = LineBreakIterator::new("\u{1F3FB} \u{1F3FB}");
-        //assert_eq!(Some(5), iter.next());
+        assert_eq!(Some(5), iter.next());
     }
 }

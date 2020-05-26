@@ -83,6 +83,15 @@ fn run_line_break_test() {
             assert_ne!(iter.next(), Some(b[0]), "{}", line);
             continue;
         }
-        assert_eq!(iter.next(), Some(b[0]), "{}", line);
+        let mut i = 0;
+        loop {
+            let ret = iter.next();
+            if ret.is_none() {
+                assert_eq!(i, b.len(), "{}", line);
+                break;
+            }
+            assert_eq!(ret, Some(b[i]), "{}", line);
+            i = i + 1;
+        }
     }
 }

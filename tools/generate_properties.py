@@ -42,17 +42,12 @@ for i in prop_type:
         i = back_i
         # combine state
         # (LB9)
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP") and j == "CM":
-            rule.append(i)
-            continue
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW") and j == "ZWJ":
-            rule.append(i)
-            continue
-
-        # (LB15)
-        if i in ("QU", "QU_SP") and j == "SP":
-            rule.append("QU_SP")
-            continue
+        #if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP") and j == "CM":
+        #    rule.append(i)
+        #    continue
+        #if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP") and j == "ZWJ":
+        #    rule.append(i)
+        #    continue
 
         # AI
         if i == "AI":
@@ -107,6 +102,10 @@ for i in prop_type:
             # (LB14)
             if i == "OP":
                 rule.append(i)
+                continue
+            # (LB15)
+            if i in ("QU", "QU_SP"):
+                rule.append("QU_SP")
                 continue
             # (LB17)
             if i in ("B2", "B2_SP"):

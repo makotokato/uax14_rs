@@ -273,6 +273,7 @@ mod tests {
         assert_eq!(get_linebreak_property('\u{00A7}'), AI);
         assert_eq!(get_linebreak_property('\u{50005}'), XX);
         assert_eq!(get_linebreak_property('\u{17D6}'), NS);
+        assert_eq!(get_linebreak_property('\u{2014}'), B2);
     }
 
     #[test]
@@ -403,6 +404,8 @@ mod tests {
         // LB17
         iter = LineBreakIterator::new("\u{2014}\u{2014}aa");
         assert_eq!(Some(6), iter.next());
+        iter = LineBreakIterator::new("\u{2014}  \u{2014}aa");
+        //assert_eq!(Some(7), iter.next());
 
         iter = LineBreakIterator::new("\u{2014}\u{2014}  \u{2014}\u{2014}123 abc");
         //assert_eq!(Some(14), iter.next());

@@ -40,14 +40,6 @@ for i in prop_type:
     back_i = i;
     for j in prop_type:
         i = back_i
-        # combine state
-        # (LB9)
-        #if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP") and j == "CM":
-        #    rule.append(i)
-        #    continue
-        #if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP") and j == "ZWJ":
-        #    rule.append(i)
-        #    continue
 
         # AI
         if i == "AI":
@@ -107,6 +99,10 @@ for i in prop_type:
             if i in ("QU", "QU_SP"):
                 rule.append("QU_SP")
                 continue
+            # (LB16)
+            if i in ("CL", "CP", "CL_CP_SP"):
+                rule.append("CL_CP_SP")
+                continue
             # (LB17)
             if i in ("B2", "B2_SP"):
                 rule.append("B2_SP")
@@ -127,10 +123,10 @@ for i in prop_type:
             continue
 
         # LB9
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW") and j == "CM":
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP", "CL_CP_SP") and j == "CM":
             rule.append(i)
             continue
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW") and j == "ZWJ":
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP", "CL_CP_SP") and j == "ZWJ":
             rule.append(i)
             continue
 
@@ -154,7 +150,7 @@ for i in prop_type:
             continue
 
         # LB12a
-        if i not in ("SP", "BA", "HY") and j == "GL":
+        if i not in ("SP", "BA", "HY", "CL_CP_SP") and j == "GL":
             rule.append("x")
             continue
 

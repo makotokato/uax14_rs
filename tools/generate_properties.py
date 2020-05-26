@@ -27,7 +27,11 @@ with open('LineBreak.txt', 'r') as file:
                 if m:
                     if int(m.group(1), 16) >= 0x20000:
                         break
-                    prop[int(m.group(1), 16)] = m.group(2)
+                    # for LB30
+                    if int(m.group(1), 16) in (0xff08, 0xff3b, 0xff5b, 0xff5f):
+                        prop[int(m.group(1), 16)] = "OP_EA"
+                    else:
+                        prop[int(m.group(1), 16)] = m.group(2)
         line = file.readline()
 
 #prop_type = sorted([x for x in set(prop)])
@@ -36,6 +40,7 @@ prop_type.append("B2_SP")
 prop_type.append("CL_CP_SP")
 prop_type.append("HL_HY")
 prop_type.append("QU_SP")
+prop_type.append("RI_RI")
 for i in prop_type:
     back_i = i;
     for j in prop_type:
@@ -92,8 +97,8 @@ for i in prop_type:
                 rule.append(i)
                 continue
             # (LB14)
-            if i == "OP":
-                rule.append(i)
+            if i in ("OP", "OP_EA"):
+                rule.append("OP")
                 continue
             # (LB15)
             if i in ("QU", "QU_SP"):
@@ -160,12 +165,12 @@ for i in prop_type:
             continue
 
         # LB14
-        if i in ("OP"):
+        if i in ("OP", "OP_EA"):
             rule.append("x")
             continue
 
         # LB15
-        if i in ("QU", "QU_SP") and j == "OP":
+        if i in ("QU", "QU_SP") and j in ("OP", "OP_EA"):
             rule.append("x")
             continue
         if i == "QU_SP":
@@ -275,13 +280,13 @@ for i in prop_type:
         if i == "NU" and j == "PR":
             rule.append("x")
             continue
-        if i == "PO" and j == "OP":
+        if i == "PO" and j in ("OP", "OP_EA"):
             rule.append("x")
             continue
         if i == "PO" and j == "NU":
             rule.append("x")
             continue
-        if i == "PR" and j == "OP":
+        if i == "PR" and j in ("OP", "OP_EA"):
             rule.append("x")
             continue
         if i == "PR" and j == "NU":
@@ -336,11 +341,19 @@ for i in prop_type:
         if i in ("AL", "HL", "NU") and j == "OP":
             rule.append("x")
             continue
-        if j in ("AL", "HL", "NU") and i == "CP":
+        if i == "CP" and j in ("AL", "HL", "NU"):
             rule.append("x")
             continue
 
         # LB30a
+        if i == "RI" and j == "RI":
+            rule.append("RI_RI")
+            continue
+        if i == "RI_RI" and j == "RI":
+            rule.append("/")
+            continue
+        if i == "RI_RI":
+            i = "RI"
 
         # LB30b
         if i == "EB" and j == "EM":

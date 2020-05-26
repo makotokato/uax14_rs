@@ -135,7 +135,7 @@ fn run_line_break_test() {
         //"\u{1F1F7}\u{1F1FA}\u{1F1F8}",
         //"\u{1F1F7}\u{1F1FA}\u{1F1F8}\u{1F1EA}",
         //"\u{1F1F7}\u{1F1FA}\u{200B}\u{1F1F8}\u{1F1EA}",
-        "\u{05D0}\u{002D}\u{05D0}",
+        //"\u{05D0}\u{002D}\u{05D0}",
     ];
 
     let f = File::open("tools/LineBreakTest.txt");

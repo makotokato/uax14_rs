@@ -212,6 +212,10 @@ for i in prop_type:
             continue
 
         # LB21
+        # (LB21a)
+        if i == "HL" and j in ("HY", "BA"):
+            rule.append("HL_HY")
+            continue
         if j in ("BA", "HY", "NS"):
             rule.append("x")
             continue
@@ -220,9 +224,6 @@ for i in prop_type:
             continue
 
         # LB21a
-        if i == "HL" and j in ("HY", "BA"):
-            rule.append("HL_HY")
-            continue
         if i == "HL_HY":
             rule.append("x")
             continue

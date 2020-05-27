@@ -1,7 +1,5 @@
 mod properties;
 
-extern crate num;
-
 use crate::properties::*;
 use core::str::CharIndices;
 
@@ -212,9 +210,6 @@ impl<'a> LineBreakIterator<'a> {
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
-        //if self.current.is_none() {
-        //self.current = self.iter.next();
-        //}
         get_linebreak_property(self.current.unwrap().1)
     }
 
@@ -435,193 +430,6 @@ macro_rules! iterator_impl {
 iterator_impl!(LineBreakIteratorLatin1, u8);
 iterator_impl!(LineBreakIteratorUTF16, u16);
 
-pub struct LineBreakIteratorU<'a, T> {
-    iter: &'a [T],
-    current: usize,
-    break_rule: LineBreakRule,
-    cj_prop: u8,
-}
-
-impl<'a, T: num::ToPrimitive> Iterator for LineBreakIteratorU<'a, T> {
-    type Item = usize;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.is_eof() {
-            return None;
-        }
-        let mut current_prop = self.get_linebreak_property();
-        loop {
-            if self.handle_lb25(current_prop) {
-                current_prop = self.get_linebreak_property();
-            }
-
-            self.iterator_next();
-            if self.iter.len() > self.current {
-                let next_prop = self.get_linebreak_property();
-
-                // Resolve state.
-                let mut break_state = get_break_state(current_prop, next_prop);
-                if break_state >= 0 {
-                    loop {
-                        self.iterator_next();
-                        if self.iter.len() > self.current {
-                            let prop = self.get_linebreak_property();
-                            break_state = get_break_state(break_state as u8, prop);
-                            if break_state < 0 {
-                                break;
-                            }
-                        }
-                    }
-                    if break_state == -1 {
-                        current_prop = self.get_linebreak_property();
-                        continue;
-                    }
-                    return Some(self.current);
-                }
-
-                if is_break(current_prop, next_prop) {
-                    return Some(self.current);
-                }
-                current_prop = next_prop;
-                continue;
-            }
-            return Some(self.current);
-        }
-    }
-}
-
-impl<'a, T: num::ToPrimitive> LineBreakIteratorU<'a, T> {
-    pub fn new(input: &[T]) -> LineBreakIteratorU<T> {
-        LineBreakIteratorU {
-            iter: input,
-            current: 0,
-            break_rule: LineBreakRule::Strict,
-            cj_prop: NS,
-        }
-    }
-
-    pub fn new_with_break_rule(input: &[T], break_rule: LineBreakRule) -> LineBreakIteratorU<T> {
-        LineBreakIteratorU {
-            iter: input,
-            current: 0,
-            break_rule: break_rule,
-            cj_prop: match break_rule {
-                LineBreakRule::Strict => NS,
-                _ => ID,
-            },
-        }
-    }
-
-    // Handle LB25
-    // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
-    fn handle_lb25(&mut self, current_prop: u8) -> bool {
-        if current_prop != PR
-            && current_prop != PO
-            && current_prop != OP
-            && current_prop != OP_EA
-            && current_prop != HY
-            && current_prop != NU
-        {
-            return false;
-        }
-
-        let backup_marker = self.save_iterator();
-        let mut state = current_prop;
-        if state == PR || state == PO {
-            self.iterator_next();
-            if !self.is_eof() {
-                state = self.get_linebreak_property();
-            }
-        }
-        if state == OP || state == HY || state == OP_EA {
-            self.iterator_next();
-            if !self.is_eof() {
-                state = self.get_linebreak_property();
-            }
-        }
-        if state != NU {
-            // Not match for LB25
-            self.current = backup_marker;
-            return false;
-        }
-
-        let mut prev = self.save_iterator();
-
-        self.iterator_next();
-        if self.is_eof() {
-            self.restore_iterator(prev);
-            return true;
-        }
-        state = self.get_linebreak_property();
-        loop {
-            if state == NU || state == SY || state == IS {
-                prev = self.save_iterator();
-                self.iterator_next();
-                if self.is_eof() {
-                    self.restore_iterator(prev);
-                    return true;
-                }
-                state = self.get_linebreak_property();
-                continue;
-            }
-            break;
-        }
-        if state == CL || state == CP {
-            prev = self.save_iterator();
-            self.iterator_next();
-            if self.is_eof() {
-                self.restore_iterator(prev);
-                return true;
-            }
-            state = self.get_linebreak_property();
-        }
-        if state == PR || state == PO {
-            return true;
-        }
-        self.restore_iterator(prev);
-        return true;
-    }
-
-    fn get_linebreak_property(&mut self) -> u8 {
-        let mut current = self.iter[self.current].to_u32().unwrap();
-        if (current & 0xfc00) == 0xd800 {
-            if self.current + 1 < self.iter.len() {
-                let next = self.iter[self.current + 1].to_u32().unwrap();
-                if (next & 0xfc00) == 0xdc00 {
-                    current = ((current & 0x3ff) << 10) + (next & 0x3ff);
-                }
-            }
-        }
-        let prop = get_linebreak_property_utf32(current);
-        match prop {
-            CJ => self.cj_prop,
-            _ => prop,
-        }
-    }
-
-    #[inline]
-    fn iterator_next(&mut self) {
-        if !self.is_eof() {
-            self.current = self.current + 1;
-        }
-    }
-
-    #[inline]
-    fn save_iterator(&mut self) -> usize {
-        self.current
-    }
-
-    #[inline]
-    fn restore_iterator(&mut self, position: usize) {
-        self.current = position;
-    }
-
-    #[inline]
-    fn is_eof(&self) -> bool {
-        self.current >= self.iter.len()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::get_linebreak_property;
@@ -629,7 +437,7 @@ mod tests {
     use crate::properties::*;
     use crate::LineBreakIterator;
     use crate::LineBreakIteratorLatin1;
-    use crate::LineBreakIteratorU;
+    use crate::LineBreakIteratorUTF16;
 
     #[test]
     fn linebreak_propery() {
@@ -745,14 +553,11 @@ mod tests {
         assert_eq!(Some(7), iter.next());
 
         let input: [u8; 10] = [0x5B, 0x20, 0x20, 0x61, 0x62, 0x63, 0x20, 0x64, 0x65, 0x66];
-        let mut iter_u8 = LineBreakIteratorU::<u8>::new(&input);
+        let mut iter_u8 = LineBreakIteratorLatin1::new(&input);
         assert_eq!(Some(7), iter_u8.next());
 
-        let mut iter_u2 = LineBreakIteratorLatin1::new(&input);
-        assert_eq!(Some(7), iter_u2.next());
-
         let input: [u16; 10] = [0x5B, 0x20, 0x20, 0x61, 0x62, 0x63, 0x20, 0x64, 0x65, 0x66];
-        let mut iter_u16 = LineBreakIteratorU::<u16>::new(&input);
+        let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
         assert_eq!(Some(7), iter_u16.next());
 
         // LB15
@@ -760,11 +565,11 @@ mod tests {
         assert_eq!(Some(10), iter.next());
 
         let input: [u8; 10] = [0x61, 0x62, 0x63, 0x22, 0x20, 0x20, 0x28, 0x64, 0x65, 0x66];
-        let mut iter_u8 = LineBreakIteratorU::<u8>::new(&input);
+        let mut iter_u8 = LineBreakIteratorLatin1::new(&input);
         assert_eq!(Some(10), iter_u8.next());
 
         let input: [u16; 10] = [0x61, 0x62, 0x63, 0x22, 0x20, 0x20, 0x28, 0x64, 0x65, 0x66];
-        let mut iter_u16 = LineBreakIteratorU::<u16>::new(&input);
+        let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
         assert_eq!(Some(10), iter_u16.next());
 
         // LB16
@@ -774,7 +579,7 @@ mod tests {
         assert_eq!(Some(6), iter.next());
 
         let input: [u16; 4] = [0x29, 0x20, 0x20, 0x203c];
-        let mut iter_u16 = LineBreakIteratorU::<u16>::new(&input);
+        let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
         assert_eq!(Some(4), iter_u16.next());
 
         // LB17
@@ -791,7 +596,7 @@ mod tests {
         let input: [u16; 13] = [
             0x2014, 0x2014, 0x20, 0x20, 0x2014, 0x2014, 0x31, 0x32, 0x33, 0x20, 0x61, 0x62, 0x63,
         ];
-        let mut iter_u16 = LineBreakIteratorU::<u16>::new(&input);
+        let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
         assert_eq!(Some(6), iter_u16.next());
 
         iter = LineBreakIterator::new("\u{1F3FB} \u{1F3FB}");

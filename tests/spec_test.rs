@@ -6,6 +6,7 @@ use std::io::prelude::*;
 use std::io::{self, BufReader};
 use std::u32;
 use uax14_rs::LineBreakIterator;
+use uax14_rs::LineBreakIteratorLatin1;
 
 #[test]
 fn run_line_break_test() {
@@ -56,42 +57,67 @@ fn run_line_break_test() {
         let mut r = line.split("#");
         let r = r.next();
         let v: Vec<_> = r.unwrap().split_ascii_whitespace().collect();
-        let mut b: Vec<_> = Vec::new();
-        let mut c: Vec<_> = Vec::new();
+        let mut char_break: Vec<_> = Vec::new();
+        let mut u8_break: Vec<_> = Vec::new();
+        let mut char_vec: Vec<_> = Vec::new();
+        let mut u8_vec: Vec<_> = Vec::new();
         let mut count = 0;
         let mut char_len = 0;
+        let mut u8_len = 0;
+        let mut ascii_only = true;
         loop {
             if count >= v.len() {
                 break;
             }
             if count % 2 == 1 {
                 let ch = char::from_u32(u32::from_str_radix(v[count], 16).unwrap()).unwrap();
-                c.push(ch);
+                char_vec.push(ch);
+                if ch as u32 >= 0x100 {
+                    ascii_only = false;
+                } else {
+                    u8_vec.push(ch as u8);
+                    u8_len = u8_len + 1;
+                }
                 char_len = char_len + ch.len_utf8();
             } else {
-                if v[count] == "\u{00d7}" {
-                } else {
+                if v[count] != "\u{00d7}" {
                     assert_eq!(v[count], "\u{00f7}");
-                    b.push(char_len);
+                    char_break.push(char_len);
+                    u8_break.push(u8_len);
                 }
             }
             count = count + 1
         }
-        let s: String = c.into_iter().collect();
+        let s: String = char_vec.into_iter().collect();
         let mut iter = LineBreakIterator::new(&s);
         if failed.contains(&&s.as_str()) {
-            assert_ne!(iter.next(), Some(b[0]), "{}", line);
+            assert_ne!(iter.next(), Some(char_break[0]), "{}", line);
             continue;
         }
+
         let mut i = 0;
         loop {
             let ret = iter.next();
             if ret.is_none() {
-                assert_eq!(i, b.len(), "{}", line);
+                assert_eq!(i, char_break.len(), "{}", line);
                 break;
             }
-            assert_eq!(ret, Some(b[i]), "{}", line);
+            assert_eq!(ret, Some(char_break[i]), "{}", line);
             i = i + 1;
+        }
+
+        if ascii_only {
+            let mut iter = LineBreakIteratorLatin1::new(&u8_vec);
+            let mut i = 0;
+            loop {
+                let ret = iter.next();
+                if ret.is_none() {
+                    assert_eq!(i, u8_break.len(), "{}", line);
+                    break;
+                }
+                assert_eq!(ret, Some(u8_break[i]), "{}", line);
+                i = i + 1;
+            }
         }
     }
 }

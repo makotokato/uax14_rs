@@ -3,19 +3,56 @@ mod properties;
 use crate::properties::*;
 use core::str::CharIndices;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum LineBreakRule {
     Normal,
     Strict,
     Loose,
 }
 
-fn get_linebreak_property(codepoint: char) -> u8 {
+fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule) -> u8 {
     let codepoint = codepoint as usize;
     if codepoint < 0x20000 {
-        let table = UAX14_PROPERTY_TABLE[codepoint / 1024];
-        return table[(codepoint & 0x3ff)];
+        if rule == LineBreakRule::Strict {
+            // CJ is mapped as NS on default
+            return UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
+        }
+        if rule == LineBreakRule::Loose {
+            let prop = match codepoint {
+                0x2010 => ID,
+                0x2013 => ID,
+                0x3005 => ID,
+                0x303B => ID,
+                0x309D => ID,
+                0x309E => ID,
+                0x30FD => ID,
+                0x30FE => ID,
+                _ => UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)],
+            };
+            return match prop {
+                CJ => ID,
+                _ => prop,
+            };
+        }
+
+        if rule == LineBreakRule::Normal {
+            let prop = match codepoint {
+                0x3005 => ID,
+                0x303B => ID,
+                0x309D => ID,
+                0x309E => ID,
+                0x30FD..=0x30FE => ID,
+                _ => UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)],
+            };
+            return match prop {
+                CJ => ID,
+                _ => prop,
+            };
+        }
+
+        return UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
     }
+
     match codepoint {
         0x20000..=0x2fffd => ID,
         0x30000..=0x3fffd => ID,
@@ -26,20 +63,12 @@ fn get_linebreak_property(codepoint: char) -> u8 {
     }
 }
 
-fn get_linebreak_property_utf32(codepoint: u32) -> u8 {
-    let codepoint = codepoint as usize;
-    if codepoint < 0x20000 {
-        let table = UAX14_PROPERTY_TABLE[codepoint / 1024];
-        return table[(codepoint & 0x3ff)];
-    }
-    match codepoint {
-        0x20000..=0x2fffd => ID,
-        0x30000..=0x3fffd => ID,
-        0xe0001 => CM,
-        0xe0020..=0xe007f => CM,
-        0xe0100..=0xe01ef => CM,
-        _ => XX,
-    }
+fn get_linebreak_property_utf32_with_rule(codepoint: u32, rule: LineBreakRule) -> u8 {
+    get_linebreak_property_with_rule(core::char::from_u32(codepoint).unwrap(), rule)
+}
+
+fn get_linebreak_property(codepoint: char) -> u8 {
+    get_linebreak_property_with_rule(codepoint, LineBreakRule::Strict)
 }
 
 fn is_break(current: u8, next: u8) -> bool {
@@ -89,7 +118,8 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                 if state == PR || state == PO {
                     current = self.iter.next();
                     if current.is_some() {
-                        state = get_linebreak_property(current.unwrap().1);
+                        state =
+                            get_linebreak_property_with_rule(current.unwrap().1, self.break_rule);
                     }
                     // If reaching EOF, restore iterator
                 }
@@ -105,29 +135,29 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                 }
                 if state == NU {
                     let mut backup = self.iter.clone();
+                    current_prop = state;
+
                     prev = current;
-                    prev_state = state;
 
                     current = self.iter.next();
                     if current.is_none() {
                         // EOF
-                        let t = prev.unwrap();
                         self.current = None;
-                        return Some(t.0 + t.1.len_utf8());
+                        return Some(prev.unwrap().0 + prev.unwrap().1.len_utf8());
                     }
-                    state = get_linebreak_property(current.unwrap().1);
+                    state = get_linebreak_property_with_rule(current.unwrap().1, self.break_rule);
                     loop {
                         if state == NU || state == SY || state == IS {
                             backup = self.iter.clone();
+                            current_prop = state;
+
                             prev = current;
-                            prev_state = state;
 
                             current = self.iter.next();
                             if current.is_none() {
                                 // EOF
-                                let t = prev.unwrap();
                                 self.current = None;
-                                return Some(t.0 + t.1.len_utf8());
+                                return Some(prev.unwrap().0 + prev.unwrap().1.len_utf8());
                             }
                             state = get_linebreak_property(current.unwrap().1);
                             continue;
@@ -136,8 +166,9 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     }
                     if state == CL || state == CP {
                         backup = self.iter.clone();
+                        current_prop = state;
+
                         prev = current;
-                        prev_state = state;
 
                         current = self.iter.next();
                         if current.is_some() {
@@ -149,10 +180,10 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                         self.current = current;
                         continue;
                     }
-                    self.current = prev;
-                    current_prop = prev_state;
+
                     // Restore iterator that is NU/CL/CP position.
                     self.iter = backup;
+                    self.current = prev;
                 } else {
                     // Not match for LB25
                     self.iter = backup;
@@ -173,16 +204,14 @@ impl<'a> Iterator for LineBreakIterator<'a> {
             let mut break_state = get_break_state(current_prop, next_prop);
             if break_state >= 0 as i8 {
                 loop {
-                    let it = self.iter.next();
-                    if it.is_none() {
+                    let prev = self.current.unwrap();
+                    self.current = self.iter.next();
+                    if self.current.is_none() {
                         // EOF
-                        let t = self.current.unwrap();
-                        self.current = None;
-                        return Some(t.0 + t.1.len_utf8());
+                        return Some(prev.0 + prev.1.len_utf8());
                     }
 
-                    self.current = it;
-                    let prop = get_linebreak_property(it.unwrap().1);
+                    let prop = self.get_linebreak_property();
                     break_state = get_break_state(break_state as u8, prop);
                     if break_state < 0 {
                         break;
@@ -209,8 +238,16 @@ impl<'a> LineBreakIterator<'a> {
         }
     }
 
+    pub fn new_with_break_rule(input: &str, break_rule: LineBreakRule) -> LineBreakIterator {
+        LineBreakIterator {
+            iter: input.char_indices(),
+            current: None,
+            break_rule: break_rule,
+        }
+    }
+
     fn get_linebreak_property(&mut self) -> u8 {
-        get_linebreak_property(self.current.unwrap().1)
+        get_linebreak_property_with_rule(self.current.unwrap().1, self.break_rule)
     }
 
     fn iterator_next(&mut self) {
@@ -235,7 +272,6 @@ macro_rules! iterator_impl {
             iter: &'a [$attr],
             current: usize,
             break_rule: LineBreakRule,
-            cj_prop: u8,
         }
 
         impl<'a> Iterator for $name<'a> {
@@ -245,44 +281,50 @@ macro_rules! iterator_impl {
                 if self.is_eof() {
                     return None;
                 }
+
                 let mut current_prop = self.get_linebreak_property();
                 loop {
-                    if self.handle_lb25(current_prop) {
+                    if self.process_lb25(current_prop) {
                         current_prop = self.get_linebreak_property();
+                        // LB25 is processed, but iter isn't updated when one NU only.
+                        if current_prop != NU {
+                            continue;
+                        }
                     }
 
-                    self.iterator_next();
-                    if self.iter.len() > self.current {
-                        let next_prop = self.get_linebreak_property();
-
-                        // Resolve state.
-                        let mut break_state = get_break_state(current_prop, next_prop);
-                        if break_state >= 0 {
-                            loop {
-                                self.iterator_next();
-                                if self.iter.len() > self.current {
-                                    let prop = self.get_linebreak_property();
-                                    break_state = get_break_state(break_state as u8, prop);
-                                    if break_state < 0 {
-                                        break;
-                                    }
-                                }
-                            }
-                            if break_state == -1 {
-                                current_prop = self.get_linebreak_property();
-                                continue;
-                            }
-                            return Some(self.current);
-                        }
-
-                        if is_break(current_prop, next_prop) {
-                            return Some(self.current);
-                        }
-                        current_prop = next_prop;
-                        continue;
+                    // Fetch next char
+                    if self.iterator_next().is_none() {
+                        return Some(self.last());
                     }
-                    return Some(self.current);
+
+                    let next_prop = self.get_linebreak_property();
+
+                    // Resolve state.
+                    let mut break_state = get_break_state(current_prop, next_prop);
+                    if break_state >= 0 {
+                        loop {
+                            if self.iterator_next().is_none() {
+                                return Some(self.last());
+                            }
+                            let prop = self.get_linebreak_property();
+                            break_state = get_break_state(break_state as u8, prop);
+                            if break_state < 0 {
+                                break;
+                            }
+                        }
+                        if break_state == -1 {
+                            current_prop = self.get_linebreak_property();
+                            continue;
+                        }
+                        return Some(self.current);
+                    }
+
+                    if is_break(current_prop, next_prop) {
+                        return Some(self.current);
+                    }
+                    current_prop = next_prop;
                 }
+                return Some(self.current);
             }
         }
 
@@ -292,7 +334,6 @@ macro_rules! iterator_impl {
                     iter: input,
                     current: 0,
                     break_rule: LineBreakRule::Strict,
-                    cj_prop: NS,
                 }
             }
 
@@ -301,16 +342,13 @@ macro_rules! iterator_impl {
                     iter: input,
                     current: 0,
                     break_rule: break_rule,
-                    cj_prop: match break_rule {
-                        LineBreakRule::Strict => NS,
-                        _ => ID,
-                    },
                 }
             }
 
-            // Handle LB25
+            // processing LB25 rule. This isn't resolved by state machine table.
+            // return false if not handled or reached to EOF.
             // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
-            fn handle_lb25(&mut self, current_prop: u8) -> bool {
+            fn process_lb25(&mut self, current_prop: u8) -> bool {
                 if current_prop != PR
                     && current_prop != PO
                     && current_prop != OP
@@ -321,7 +359,7 @@ macro_rules! iterator_impl {
                     return false;
                 }
 
-                let backup_marker = self.save_iterator();
+                let start_marker = self.save_iterator();
                 let mut state = current_prop;
                 if state == PR || state == PO {
                     self.iterator_next();
@@ -337,37 +375,32 @@ macro_rules! iterator_impl {
                 }
                 if state != NU {
                     // Not match for LB25
-                    self.current = backup_marker;
+                    self.current = start_marker;
                     return false;
                 }
 
                 let mut prev = self.save_iterator();
-
-                self.iterator_next();
-                if self.is_eof() {
-                    self.restore_iterator(prev);
-                    return true;
+                if self.iterator_next().is_none() {
+                    //self.restore_iterator(prev);
+                    return false;
                 }
-                state = self.get_linebreak_property();
+
                 loop {
-                    if state == NU || state == SY || state == IS {
-                        prev = self.save_iterator();
-                        self.iterator_next();
-                        if self.is_eof() {
-                            self.restore_iterator(prev);
-                            return true;
-                        }
-                        state = self.get_linebreak_property();
-                        continue;
+                    state = self.get_linebreak_property();
+                    if state != NU && state != SY && state != IS {
+                        break;
                     }
-                    break;
+                    prev = self.save_iterator();
+                    if self.iterator_next().is_none() {
+                        //self.restore_iterator(prev);
+                        return false;
+                    }
                 }
                 if state == CL || state == CP {
                     prev = self.save_iterator();
-                    self.iterator_next();
-                    if self.is_eof() {
-                        self.restore_iterator(prev);
-                        return true;
+                    if self.iterator_next().is_none() {
+                        //self.restore_iterator(prev);
+                        return false;
                     }
                     state = self.get_linebreak_property();
                 }
@@ -388,17 +421,13 @@ macro_rules! iterator_impl {
                         }
                     }
                 }
-                let prop = get_linebreak_property_utf32(current as u32);
-                match prop {
-                    CJ => self.cj_prop,
-                    _ => prop,
-                }
+                get_linebreak_property_utf32_with_rule(current as u32, self.break_rule)
             }
 
             #[inline]
-            fn iterator_next(&mut self) {
+            fn iterator_next(&mut self) -> Option<$attr> {
                 if self.is_eof() {
-                    return;
+                    return None;
                 }
                 self.current = self.current + 1;
                 let prev = self.iter[self.current - 1] as u32;
@@ -407,6 +436,10 @@ macro_rules! iterator_impl {
                 {
                     self.current = self.current + 1;
                 }
+                if self.is_eof() {
+                    return None;
+                }
+                Some(self.iter[self.current])
             }
 
             #[inline]
@@ -417,6 +450,11 @@ macro_rules! iterator_impl {
             #[inline]
             fn restore_iterator(&mut self, position: usize) {
                 self.current = position;
+            }
+
+            #[inline]
+            fn last(&mut self) -> usize {
+                self.iter.len()
             }
 
             #[inline]
@@ -438,6 +476,7 @@ mod tests {
     use crate::LineBreakIterator;
     use crate::LineBreakIteratorLatin1;
     use crate::LineBreakIteratorUTF16;
+    use crate::LineBreakRule;
 
     #[test]
     fn linebreak_propery() {
@@ -541,6 +580,7 @@ mod tests {
         let mut iter = LineBreakIterator::new("hello world");
         assert_eq!(Some(6), iter.next());
         assert_eq!(Some(11), iter.next());
+        assert_eq!(None, iter.next());
 
         iter = LineBreakIterator::new("$10 $10");
         assert_eq!(Some(4), iter.next());
@@ -551,10 +591,14 @@ mod tests {
         // LB14
         iter = LineBreakIterator::new("[  abc def");
         assert_eq!(Some(7), iter.next());
+        assert_eq!(Some(10), iter.next());
+        assert_eq!(None, iter.next());
 
         let input: [u8; 10] = [0x5B, 0x20, 0x20, 0x61, 0x62, 0x63, 0x20, 0x64, 0x65, 0x66];
         let mut iter_u8 = LineBreakIteratorLatin1::new(&input);
         assert_eq!(Some(7), iter_u8.next());
+        assert_eq!(Some(10), iter_u8.next());
+        assert_eq!(None, iter_u8.next());
 
         let input: [u16; 10] = [0x5B, 0x20, 0x20, 0x61, 0x62, 0x63, 0x20, 0x64, 0x65, 0x66];
         let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
@@ -593,6 +637,15 @@ mod tests {
         assert_eq!(Some(18), iter.next());
         assert_eq!(Some(21), iter.next());
 
+        // LB25
+        let mut iter = LineBreakIterator::new("(0,1)+(2,3)");
+        assert_eq!(Some(11), iter.next());
+        let input: [u16; 11] = [
+            0x28, 0x30, 0x2C, 0x31, 0x29, 0x2B, 0x28, 0x32, 0x2C, 0x33, 0x29,
+        ];
+        let mut iter_u16 = LineBreakIteratorUTF16::new(&input);
+        assert_eq!(Some(11), iter_u16.next());
+
         let input: [u16; 13] = [
             0x2014, 0x2014, 0x20, 0x20, 0x2014, 0x2014, 0x31, 0x32, 0x33, 0x20, 0x61, 0x62, 0x63,
         ];
@@ -601,5 +654,92 @@ mod tests {
 
         iter = LineBreakIterator::new("\u{1F3FB} \u{1F3FB}");
         assert_eq!(Some(5), iter.next());
+    }
+
+    #[test]
+    fn linebreak_strict() {
+        let mut iter = LineBreakIterator::new_with_break_rule(
+            "サンプル文\u{3041}サンプル文",
+            LineBreakRule::Strict,
+        );
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
+        assert_eq!(Some(24), iter.next());
+        assert_eq!(Some(27), iter.next());
+
+        // from css/css-text/line-break/line-break-loose-012.xht
+        let mut iter =
+            LineBreakIterator::new_with_break_rule("サンプル文\u{30FC}サ", LineBreakRule::Strict);
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
+
+        // from css/css-text/line-break/line-break-loose-018.xht
+        let mut iter = LineBreakIterator::new_with_break_rule(
+            "サンプル文\u{20ac}サンプル文",
+            LineBreakRule::Strict,
+        );
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        assert_eq!(Some(15), iter.next());
+        //assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
+        assert_eq!(Some(24), iter.next());
+        assert_eq!(Some(27), iter.next());
+    }
+
+    #[test]
+    fn linebreak_loose() {
+        // from css/css-text/line-break/line-break-loose-011.xht
+        let mut iter =
+            LineBreakIterator::new_with_break_rule("サンプル文\u{3041}サ", LineBreakRule::Loose);
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        assert_eq!(Some(15), iter.next());
+        assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
+
+        // from css/css-text/line-break/line-break-loose-012.xht
+        let mut iter =
+            LineBreakIterator::new_with_break_rule("サンプル文\u{30FC}サ", LineBreakRule::Loose);
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        assert_eq!(Some(15), iter.next());
+        assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
+
+        // from css/css-text/line-break/line-break-loose-013.xht
+        let mut iter =
+            LineBreakIterator::new_with_break_rule("サンプル文\u{301C}サ", LineBreakRule::Loose);
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        //assert_eq!(Some(15), iter.next());
+        assert_eq!(Some(18), iter.next());
+        assert_eq!(Some(21), iter.next());
+
+        // from css/css-text/line-break/line-break-loose-018.xht
+        let mut iter =
+            LineBreakIterator::new_with_break_rule("サンプル文\u{20ac}サ", LineBreakRule::Loose);
+        assert_eq!(Some(3), iter.next());
+        assert_eq!(Some(6), iter.next());
+        assert_eq!(Some(9), iter.next());
+        assert_eq!(Some(12), iter.next());
+        assert_eq!(Some(15), iter.next());
+        assert_eq!(Some(21), iter.next());
     }
 }

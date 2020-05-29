@@ -13,6 +13,7 @@ pub enum LineBreakRule {
     Normal,
     Strict,
     Loose,
+    Anywhare,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -25,11 +26,6 @@ pub enum WordBreakRule {
 fn get_linebreak_property_utf32_with_rule(codepoint: u32, rule: LineBreakRule, _ja_zh: bool) -> u8 {
     let codepoint = codepoint as usize;
     if codepoint < 0x20000 {
-        if rule == LineBreakRule::Strict {
-            // CJ is mapped as NS on default
-            return UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
-        }
-
         if rule == LineBreakRule::Loose {
             let prop = UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
             return match prop {
@@ -46,6 +42,7 @@ fn get_linebreak_property_utf32_with_rule(codepoint: u32, rule: LineBreakRule, _
             };
         }
 
+        // CJ is mapped as NS on default
         return UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
     }
 
@@ -336,6 +333,8 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     ) {
                         return Some(self.current.unwrap().0);
                     }
+                } else if self.break_rule == LineBreakRule::Anywhere {
+                    return Some(self.current.unwrap().0);
                 }
             }
 
@@ -490,6 +489,8 @@ macro_rules! iterator_impl {
                             ) {
                                 return Some(self.current);
                             }
+                        } else if self.break_rule == LineBreakRule::Anywhere {
+                            return Some(self.current);
                         }
                     }
 
@@ -532,13 +533,18 @@ macro_rules! iterator_impl {
                 }
             }
 
-            pub fn new_with_break_rule(input: &[$attr], break_rule: LineBreakRule) -> $name {
+            pub fn new_with_break_rule(
+                input: &[$attr],
+                break_rule: LineBreakRule,
+                word_break_rule: WordBreakRule,
+                ja_zh: bool,
+            ) -> $name {
                 $name {
                     iter: input,
                     current: 0,
                     break_rule: break_rule,
-                    word_break_rule: WordBreakRule::Normal,
-                    ja_zh: false,
+                    word_break_rule: word_break_rule,
+                    ja_zh: ja_zh,
                 }
             }
 

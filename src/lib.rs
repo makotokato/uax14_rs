@@ -15,7 +15,7 @@ pub enum LineBreakRule {
     Loose,
 }
 
-fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh: bool) -> u8 {
+fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, _ja_zh: bool) -> u8 {
     let codepoint = codepoint as usize;
     if codepoint < 0x20000 {
         if rule == LineBreakRule::Strict {
@@ -24,18 +24,7 @@ fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh:
         }
 
         if rule == LineBreakRule::Loose {
-            let prop = match codepoint {
-                0x2010 => ID, // BA
-                0x2013 => ID, // BA
-                0x3005 => ID, // NS
-                0x303B => ID, // NS
-                0x309D => ID, // NS
-                0x309E => ID, // NS
-                0x30FD => ID, // NS
-                0x30FE => ID, // NS
-                _ => UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)],
-            };
-
+            let prop = UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
             return match prop {
                 CJ => ID,
                 _ => prop,
@@ -43,14 +32,7 @@ fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh:
         }
 
         if rule == LineBreakRule::Normal {
-            let prop = match codepoint {
-                0x3005 => ID,
-                0x303B => ID,
-                0x309D => ID,
-                0x309E => ID,
-                0x30FD..=0x30FE => ID,
-                _ => UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)],
-            };
+            let prop = UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)];
             return match prop {
                 CJ => ID,
                 _ => prop,
@@ -84,7 +66,17 @@ fn get_linebreak_property(codepoint: char) -> u8 {
 }
 
 fn is_break_by_normal(codepoint: char, ja_zh: bool) -> bool {
-    ja_zh && (codepoint as u32 == 0x301C || codepoint as u32 == 0x30A0)
+    match codepoint as u32 {
+                0x3005 => true,
+                0x301C => ja_zh,
+                0x303B => true,
+                0x309D => true,
+                0x309E => true,
+                0x30A0 => ja_zh,
+                0x30FD => true,
+                0x30FE => true,
+                _ => false,
+     }
 }
 
 fn is_break_by_loose(
@@ -103,7 +95,8 @@ fn is_break_by_loose(
     if ja_zh && left_prop == PR && UnicodeWidthChar::width_cjk(left_codepoint).unwrap() == 2 {
         return true;
     }
-    let break_now = match right_codepoint as u32 {
+
+    match right_codepoint as u32 {
         0x2010 => true,
         0x2013 => true,
         0x203C => ja_zh,
@@ -125,15 +118,15 @@ fn is_break_by_loose(
         0xFF1F => ja_zh,
         0xFF65 => ja_zh,
         _ => false,
-    };
-
-    break_now
+    }
 }
 
+#[inline]
 fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
     is_break_by_normal(char::from_u32(codepoint).unwrap(), ja_zh)
 }
 
+#[inline]
 fn is_break_utf32_by_loose(
     left_codepoint: u32,
     right_codepoint: u32,
@@ -150,16 +143,16 @@ fn is_break_utf32_by_loose(
     )
 }
 
-fn is_break(current: u8, next: u8) -> bool {
-    let rule = UAX14_RULE_TABLE[((current as usize) - 1) * PROP_COUNT + (next as usize) - 1];
+fn is_break(left: u8, right: u8) -> bool {
+    let rule = UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1];
     if rule == -1 {
         return false;
     }
     true
 }
 
-fn get_break_state(current: u8, next: u8) -> i8 {
-    UAX14_RULE_TABLE[((current as usize) - 1) * PROP_COUNT + (next as usize) - 1]
+fn get_break_state(left: u8, right: u8) -> i8 {
+    UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
 }
 
 pub struct LineBreakIterator<'a> {
@@ -192,9 +185,6 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                 let mut current = self.current;
                 let mut state = current_prop;
 
-                let mut prev = current;
-                let mut prev_state = state;
-
                 if state == PR || state == PO {
                     current = self.iter.next();
                     if current.is_some() {
@@ -207,9 +197,6 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     // If reaching EOF, restore iterator
                 }
                 if state == OP || state == HY || state == OP_EA {
-                    prev = current;
-                    prev_state = state;
-
                     current = self.iter.next();
                     if current.is_some() {
                         state = get_linebreak_property(current.unwrap().1);
@@ -220,7 +207,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     let mut backup = self.iter.clone();
                     current_prop = state;
 
-                    prev = current;
+                    let mut prev = current;
 
                     current = self.iter.next();
                     if current.is_none() {
@@ -284,9 +271,9 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                 self.current = None;
                 return Some(t.0 + t.1.len_utf8());
             }
-            let prev = self.current;
+            let left_codepoint = self.current;
             self.current = next;
-            let next_prop = self.get_linebreak_property();
+            let right_prop = self.get_linebreak_property();
 
             // CSS line-break property handling
             {
@@ -296,10 +283,10 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     }
                 } else if self.break_rule == LineBreakRule::Loose {
                     if is_break_by_loose(
-                        prev.unwrap().1,
+                        left_codepoint.unwrap().1,
                         self.current.unwrap().1,
                         current_prop,
-                        next_prop,
+                        right_prop,
                         self.ja_zh,
                     ) {
                         return Some(self.current.unwrap().0);
@@ -308,7 +295,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
             }
 
             // Resolve state.
-            let mut break_state = get_break_state(current_prop, next_prop);
+            let mut break_state = get_break_state(current_prop, right_prop);
             if break_state >= 0 as i8 {
                 loop {
                     let prev = self.current.unwrap();
@@ -330,7 +317,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                 return Some(self.current.unwrap().0);
             }
 
-            if is_break(current_prop, next_prop) {
+            if is_break(current_prop, right_prop) {
                 return Some(self.current.unwrap().0);
             }
         }
@@ -364,9 +351,9 @@ impl<'a> LineBreakIterator<'a> {
         get_linebreak_property_with_rule(self.current.unwrap().1, self.break_rule, self.ja_zh)
     }
 
-    fn iterator_next(&mut self) {
-        self.current = self.iter.next();
-    }
+    //fn iterator_next(&mut self) {
+    //    self.current = self.iter.next();
+    //}
 
     #[inline]
     fn is_eof(&mut self) -> bool {
@@ -459,7 +446,6 @@ macro_rules! iterator_impl {
                     }
                     left_prop = right_prop;
                 }
-                return Some(self.current);
             }
         }
 

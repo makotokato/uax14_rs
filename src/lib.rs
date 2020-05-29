@@ -15,7 +15,14 @@ pub enum LineBreakRule {
     Loose,
 }
 
-fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, _ja_zh: bool) -> u8 {
+#[derive(Copy, Clone, PartialEq)]
+pub enum WordBreakRule {
+    Normal,
+    BreakAll,
+    KeepAll,
+}
+
+fn get_linebreak_property_utf32_with_rule(codepoint: u32, rule: LineBreakRule, _ja_zh: bool) -> u8 {
     let codepoint = codepoint as usize;
     if codepoint < 0x20000 {
         if rule == LineBreakRule::Strict {
@@ -52,31 +59,32 @@ fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, _ja_zh
     }
 }
 
+#[inline]
 fn get_linebreak_property_latin1(codepoint: u8) -> u8 {
     let codepoint = codepoint as usize;
     UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)]
 }
 
-fn get_linebreak_property_utf32_with_rule(codepoint: u32, rule: LineBreakRule, ja_zh: bool) -> u8 {
-    get_linebreak_property_with_rule(char::from_u32(codepoint).unwrap(), rule, ja_zh)
+fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh: bool) -> u8 {
+    get_linebreak_property_utf32_with_rule(codepoint as u32, rule, ja_zh)
 }
 
 fn get_linebreak_property(codepoint: char) -> u8 {
     get_linebreak_property_with_rule(codepoint, LineBreakRule::Strict, false)
 }
 
-fn is_break_by_normal(codepoint: char, ja_zh: bool) -> bool {
+fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
     match codepoint as u32 {
-                0x3005 => true,
-                0x301C => ja_zh,
-                0x303B => true,
-                0x309D => true,
-                0x309E => true,
-                0x30A0 => ja_zh,
-                0x30FD => true,
-                0x30FE => true,
-                _ => false,
-     }
+        0x3005 => true,
+        0x301C => ja_zh,
+        0x303B => true,
+        0x309D => true,
+        0x309E => true,
+        0x30A0 => ja_zh,
+        0x30FD => true,
+        0x30FE => true,
+        _ => false,
+    }
 }
 
 fn is_break_by_loose(
@@ -122,8 +130,8 @@ fn is_break_by_loose(
 }
 
 #[inline]
-fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
-    is_break_by_normal(char::from_u32(codepoint).unwrap(), ja_zh)
+fn is_break_by_normal(codepoint: char, ja_zh: bool) -> bool {
+    is_break_utf32_by_normal(codepoint as u32, ja_zh)
 }
 
 #[inline]
@@ -143,6 +151,7 @@ fn is_break_utf32_by_loose(
     )
 }
 
+#[inline]
 fn is_break(left: u8, right: u8) -> bool {
     let rule = UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1];
     if rule == -1 {
@@ -151,6 +160,7 @@ fn is_break(left: u8, right: u8) -> bool {
     true
 }
 
+#[inline]
 fn get_break_state(left: u8, right: u8) -> i8 {
     UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
 }
@@ -159,6 +169,7 @@ pub struct LineBreakIterator<'a> {
     iter: CharIndices<'a>,
     current: Option<(usize, char)>,
     break_rule: LineBreakRule,
+    word_break_rule: WordBreakRule,
     ja_zh: bool,
 }
 
@@ -275,6 +286,30 @@ impl<'a> Iterator for LineBreakIterator<'a> {
             self.current = next;
             let right_prop = self.get_linebreak_property();
 
+            // CSS word-break property handling
+            {
+                if self.word_break_rule == WordBreakRule::BreakAll {
+                    current_prop = match current_prop {
+                        AL => ID,
+                        NU => ID,
+                        SA => ID,
+                        _ => current_prop,
+                    };
+                } else if self.word_break_rule == WordBreakRule::KeepAll {
+                    if (current_prop == AI
+                        || current_prop == AL
+                        || current_prop == ID
+                        || current_prop == NU)
+                        && (right_prop == AI
+                            || right_prop == AL
+                            || right_prop == ID
+                            || right_prop == NU)
+                    {
+                        continue;
+                    }
+                }
+            }
+
             // CSS line-break property handling
             {
                 if self.break_rule == LineBreakRule::Normal {
@@ -294,7 +329,6 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                 }
             }
 
-            // Resolve state.
             let mut break_state = get_break_state(current_prop, right_prop);
             if break_state >= 0 as i8 {
                 loop {
@@ -330,19 +364,22 @@ impl<'a> LineBreakIterator<'a> {
             iter: input.char_indices(),
             current: None,
             break_rule: LineBreakRule::Strict,
+            word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
         }
     }
 
     pub fn new_with_break_rule(
         input: &str,
-        break_rule: LineBreakRule,
+        line_break_rule: LineBreakRule,
+        word_break_rule: WordBreakRule,
         ja_zh: bool,
     ) -> LineBreakIterator {
         LineBreakIterator {
             iter: input.char_indices(),
             current: None,
-            break_rule: break_rule,
+            break_rule: line_break_rule,
+            word_break_rule: word_break_rule,
             ja_zh: ja_zh,
         }
     }
@@ -373,6 +410,7 @@ macro_rules! iterator_impl {
             iter: &'a [$attr],
             current: usize,
             break_rule: LineBreakRule,
+            word_break_rule: WordBreakRule,
             ja_zh: bool,
         }
 
@@ -400,6 +438,30 @@ macro_rules! iterator_impl {
                     }
 
                     let right_prop = self.get_linebreak_property();
+
+                    // CSS word-break property handling
+                    {
+                        if self.word_break_rule == WordBreakRule::BreakAll {
+                            left_prop = match left_prop {
+                                AL => ID,
+                                NU => ID,
+                                SA => ID,
+                                _ => left_prop,
+                            };
+                        } else if self.word_break_rule == WordBreakRule::KeepAll {
+                            if (left_prop == AI
+                                || left_prop == AL
+                                || left_prop == ID
+                                || left_prop == NU)
+                                && (right_prop == AI
+                                    || right_prop == AL
+                                    || right_prop == ID
+                                    || right_prop == NU)
+                            {
+                                continue;
+                            }
+                        }
+                    }
 
                     // CSS line-break property handling
                     {
@@ -455,6 +517,7 @@ macro_rules! iterator_impl {
                     iter: input,
                     current: 0,
                     break_rule: LineBreakRule::Strict,
+                    word_break_rule: WordBreakRule::Normal,
                     ja_zh: false,
                 }
             }
@@ -464,6 +527,7 @@ macro_rules! iterator_impl {
                     iter: input,
                     current: 0,
                     break_rule: break_rule,
+                    word_break_rule: WordBreakRule::Normal,
                     ja_zh: false,
                 }
             }

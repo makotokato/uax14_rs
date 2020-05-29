@@ -44,7 +44,10 @@ fn wordbrak_breakall() {
         false,
     );
     let result: Vec<usize> = iter.map(|x| x).collect();
-    assert_eq!(vec![2, 4, 6, 8, 10, 12, 15, 17, 19, 21, 24, 26, 28, 30, 32, 34, 36, 38], result);
+    assert_eq!(
+        vec![2, 4, 6, 8, 10, 12, 15, 17, 19, 21, 24, 26, 28, 30, 32, 34, 36, 38],
+        result
+    );
 
     // from css/css-text/word-break/word-break-break-all-008.html
     let mut iter = LineBreakIterator::new_with_break_rule(

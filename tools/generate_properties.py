@@ -5,9 +5,32 @@ import re
 prop = []
 rule = []
 table = []
+ea_table = []
 
 for x in range(0x20000):
     prop.append('XX')
+    ea_table.append('N')
+
+with open('EastAsianWidth.txt', 'r') as file:
+    line = file.readline()
+    while line:
+        line = line.strip()
+        if not line.startswith('#'):
+            m = re.search("([0-9A-F]{1,6})\.\.([0-9A-F]{1,6})\;([A-Za-z]{1,})", line)
+            if m:
+                if int(m.group(2), 16) >= 0x20000:
+                    break
+                length = int(m.group(2), 16) - int(m.group(1), 16) + 1
+                s = int(m.group(1), 16)
+                for x in range(length):
+                    ea_table[s + x] = m.group(3)
+            else:
+                m = re.search("([0-9A-F]{1,6})\;([A-Za-z]{1,})", line)
+                if m:
+                    if int(m.group(1), 16) >= 0x20000:
+                        break
+                    ea_table[int(m.group(1), 16)] = m.group(2)
+        line = file.readline()
 
 with open('LineBreak.txt', 'r') as file:
     line = file.readline()
@@ -28,8 +51,10 @@ with open('LineBreak.txt', 'r') as file:
                     if int(m.group(1), 16) >= 0x20000:
                         break
                     # for LB30
-                    if int(m.group(1), 16) in (0x2329, 0xff08, 0xff3b, 0xff5b, 0xff5f):
+                    if m.group(2) == "OP" and ea_table[int(m.group(1), 16)] in ("F", "W", "H"):
                         prop[int(m.group(1), 16)] = "OP_EA"
+                    elif m.group(2) == "CP" and ea_table[int(m.group(1), 16)] in ("F", "W", "H"):
+                        prop[int(m.group(1), 16)] = "CP_EA"
                     else:
                         prop[int(m.group(1), 16)] = m.group(2)
         line = file.readline()

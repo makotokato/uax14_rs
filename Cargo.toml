@@ -9,5 +9,8 @@ repository = "https://github.com/makotokato/uax14_rs"
 keywords = ["unicode"]
 categories = ["text-processing"]
 
+[dependencies]
+unicode-width = "0.1.7"
+
 [profile.release]
 lto = true

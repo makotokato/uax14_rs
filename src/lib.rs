@@ -65,6 +65,7 @@ fn get_linebreak_property_latin1(codepoint: u8) -> u8 {
     UAX14_PROPERTY_TABLE[codepoint / 1024][(codepoint & 0x3ff)]
 }
 
+#[inline]
 fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh: bool) -> u8 {
     get_linebreak_property_utf32_with_rule(codepoint as u32, rule, ja_zh)
 }
@@ -73,6 +74,7 @@ fn get_linebreak_property(codepoint: char) -> u8 {
     get_linebreak_property_with_rule(codepoint, LineBreakRule::Strict, false)
 }
 
+#[inline]
 fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
     match codepoint as u32 {
         0x3005 => true,
@@ -87,6 +89,7 @@ fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
     }
 }
 
+#[inline]
 fn is_break_by_loose(
     left_codepoint: char,
     right_codepoint: char,
@@ -226,6 +229,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                         self.current = None;
                         return Some(prev.unwrap().0 + prev.unwrap().1.len_utf8());
                     }
+
                     state = get_linebreak_property_with_rule(
                         current.unwrap().1,
                         self.break_rule,
@@ -299,11 +303,17 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     if (current_prop == AI
                         || current_prop == AL
                         || current_prop == ID
-                        || current_prop == NU)
+                        || current_prop == NU
+                        || current_prop == HY
+                        || current_prop == H2
+                        || current_prop == H3)
                         && (right_prop == AI
                             || right_prop == AL
                             || right_prop == ID
-                            || right_prop == NU)
+                            || right_prop == NU
+                            || right_prop == HY
+                            || right_prop == H2
+                            || right_prop == H3)
                     {
                         continue;
                     }
@@ -667,7 +677,6 @@ mod tests {
     use crate::LineBreakIterator;
     use crate::LineBreakIteratorLatin1;
     use crate::LineBreakIteratorUTF16;
-    use crate::LineBreakRule;
 
     #[test]
     fn linebreak_propery() {

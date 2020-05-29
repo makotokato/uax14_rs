@@ -9,7 +9,20 @@ extern crate uax14_rs;
 use uax14_rs::LineBreakIterator;
 
 fn main ()
-    let mut iter = LineBreakIterator("Hello World");
+    let mut iter = LineBreakIterator::new("Hello World");
+    let result: Vec<usize> = iter.map(|x| x).collect();
+    println!("{}", result);
+}
+```
+
+With CSS property.
+```rust
+extern crate uax14_rs;
+use uax14_rs::LineBreakIterator;
+
+fn main ()
+    let mut iter =
+        LineBreakIterator::new_with_rule("Hello World", LineBreakRule::Strict, WordBreakRule::BreakAll, false);
     let result: Vec<usize> = iter.map(|x| x).collect();
     println!("{}", result);
 }

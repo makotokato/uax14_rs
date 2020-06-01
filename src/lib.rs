@@ -154,7 +154,7 @@ fn is_break_utf32_by_loose(
 #[inline]
 fn is_break(left: u8, right: u8) -> bool {
     let rule = UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1];
-    if rule == -1 {
+    if rule == KEEP_RULE {
         return false;
     }
     true
@@ -354,7 +354,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                         break;
                     }
                 }
-                if break_state == -1 {
+                if break_state == KEEP_RULE {
                     continue;
                 }
                 return Some(self.current.unwrap().0);
@@ -507,7 +507,7 @@ macro_rules! iterator_impl {
                                 break;
                             }
                         }
-                        if break_state == -1 {
+                        if break_state == KEEP_RULE {
                             left_prop = self.get_linebreak_property();
                             continue;
                         }

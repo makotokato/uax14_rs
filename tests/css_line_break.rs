@@ -1,15 +1,12 @@
 extern crate uax14_rs;
 
-use std::char;
-use std::u32;
 use uax14_rs::LineBreakIterator;
-use uax14_rs::LineBreakIteratorLatin1;
 use uax14_rs::LineBreakIteratorUTF16;
 use uax14_rs::LineBreakRule;
 use uax14_rs::WordBreakRule;
 
 fn strict(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
-    let mut iter = LineBreakIterator::new_with_break_rule(
+    let iter = LineBreakIterator::new_with_break_rule(
         s,
         LineBreakRule::Strict,
         WordBreakRule::Normal,
@@ -19,7 +16,7 @@ fn strict(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize
     assert_eq!(expect_utf8, result, "{}", s);
 
     let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
-    let mut iter = LineBreakIteratorUTF16::new_with_break_rule(
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
         &s_utf16,
         LineBreakRule::Strict,
         WordBreakRule::Normal,
@@ -30,7 +27,7 @@ fn strict(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize
 }
 
 fn normal(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
-    let mut iter = LineBreakIterator::new_with_break_rule(
+    let iter = LineBreakIterator::new_with_break_rule(
         s,
         LineBreakRule::Normal,
         WordBreakRule::Normal,
@@ -40,7 +37,7 @@ fn normal(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize
     assert_eq!(expect_utf8, result, "{}", s);
 
     let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
-    let mut iter = LineBreakIteratorUTF16::new_with_break_rule(
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
         &s_utf16,
         LineBreakRule::Normal,
         WordBreakRule::Normal,
@@ -51,7 +48,7 @@ fn normal(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize
 }
 
 fn loose(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
-    let mut iter = LineBreakIterator::new_with_break_rule(
+    let iter = LineBreakIterator::new_with_break_rule(
         s,
         LineBreakRule::Loose,
         WordBreakRule::Normal,
@@ -61,7 +58,7 @@ fn loose(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>
     assert_eq!(expect_utf8, result, "{}", s);
 
     let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
-    let mut iter = LineBreakIteratorUTF16::new_with_break_rule(
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
         &s_utf16,
         LineBreakRule::Loose,
         WordBreakRule::Normal,

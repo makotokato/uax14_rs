@@ -6,7 +6,7 @@ use uax14_rs::LineBreakRule;
 use uax14_rs::WordBreakRule;
 
 fn break_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
-    let mut iter = LineBreakIterator::new_with_break_rule(
+    let iter = LineBreakIterator::new_with_break_rule(
         s,
         LineBreakRule::Strict,
         WordBreakRule::BreakAll,
@@ -16,7 +16,7 @@ fn break_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
     assert_eq!(expect_utf8, result, "{}", s);
 
     let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
-    let mut iter = LineBreakIteratorUTF16::new_with_break_rule(
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
         &s_utf16,
         LineBreakRule::Strict,
         WordBreakRule::BreakAll,
@@ -27,7 +27,7 @@ fn break_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
 }
 
 fn keep_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
-    let mut iter = LineBreakIterator::new_with_break_rule(
+    let iter = LineBreakIterator::new_with_break_rule(
         s,
         LineBreakRule::Strict,
         WordBreakRule::KeepAll,
@@ -37,7 +37,7 @@ fn keep_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
     assert_eq!(expect_utf8, result, "{}", s);
 
     let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
-    let mut iter = LineBreakIteratorUTF16::new_with_break_rule(
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
         &s_utf16,
         LineBreakRule::Strict,
         WordBreakRule::KeepAll,

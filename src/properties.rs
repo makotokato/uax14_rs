@@ -28,8 +28,8 @@ pub const LF: u8 = 27;
 pub const NL: u8 = 28;
 pub const NS: u8 = 29;
 pub const NU: u8 = 30;
-pub const OP: u8 = 31;
-pub const OP_EA: u8 = 32;
+pub const OP_EA: u8 = 31;
+pub const OP_OP30: u8 = 32;
 pub const PO: u8 = 33;
 pub const PR: u8 = 34;
 pub const QU: u8 = 35;
@@ -49,20 +49,21 @@ pub const QU_SP: u8 = 48;
 pub const RI_RI: u8 = 49;
 pub const PROP_COUNT: usize = 49;
 
+pub const BREAK_RULE: i8 = -128;
+pub const KEEP_RULE: i8 = -1;
+
 pub const UAX14_PROPERTIES_0: [u8; 1024] = [
     CM, CM, CM, CM, CM, CM, CM, CM, CM, BA, LF, BK, BK, CR, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, SP, EX, QU, AL, PR, PO, AL, QU, OP, CP, AL, PR, IS, HY, IS, SY,
-    NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, IS, IS, AL, AL, AL, EX, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, PR, CP, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, OP, BA, CL, AL, CM, CM, CM, CM, CM, CM, NL, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, GL, OP, PO, PR, PR, PR, AL, AI,
-    AI, AL, AI, QU, AL, BA, AL, AL, PO, PR, AI, AI, BB, AL, AI, AI, AI, AI, AI, QU, AI, AI, AI, OP,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    CM, CM, CM, CM, CM, CM, CM, CM, SP, EX, QU, AL, PR, PO, AL, QU, OP_OP30, CP, AL, PR, IS, HY,
+    IS, SY, NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, IS, IS, AL, AL, AL, EX, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30,
+    PR, CP, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, OP_OP30, BA, CL, AL, CM, CM, CM, CM, CM, CM, NL, CM, CM, CM, CM,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, GL,
+    OP_OP30, PO, PR, PR, PR, AL, AI, AI, AL, AI, QU, AL, BA, AL, AL, PO, PR, AI, AI, BB, AL, AI,
+    AI, AI, AI, AI, QU, AI, AI, AI, OP_OP30, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
@@ -79,20 +80,23 @@ pub const UAX14_PROPERTIES_0: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, BB, AI, AI, AI, BB, AI, AL, AL,
-    AI, AL, AL, AL, AL, AL, AL, AL, AI, AI, AI, AI, AL, AI, AL, BB, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AI, BB, AI, AI, AI, BB, AI, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AI, AI, AI, AI, AL,
+    AI, AL, BB, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
     CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
     CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, GL, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, GL, GL, GL, GL,
-    GL, GL, GL, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, AL, AL, AL, AL, AL, AL, AL, AL,
-    XX, XX, AL, AL, AL, AL, IS, AL, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL, AL, XX, AL, XX, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, AL,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, GL, CM, CM, CM, CM, CM,
+    CM, CM, CM, CM, CM, CM, CM, GL, GL, GL, GL, GL, GL, GL, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
+    CM, CM, CM, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, AL, AL, AL, AL, IS, AL, XX, XX, XX, XX, AL,
+    AL, AL, AL, AL, AL, AL, XX, AL, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL,
 ];
 
 pub const UAX14_PROPERTIES_1: [u8; 1024] = [
@@ -222,15 +226,15 @@ pub const UAX14_PROPERTIES_3: [u8; 1024] = [
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     AL, BB, BB, BB, BB, AL, BB, BB, GL, BB, BB, BA, GL, EX, EX, EX, EX, EX, GL, AL, EX, AL, AL, AL,
     CM, CM, AL, AL, AL, AL, AL, AL, NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, BA, CM, AL, CM, AL, CM, OP, CL, OP, CL, CM, CM, AL, AL, AL, AL, AL, AL, AL, AL,
-    XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, BA, CM, CM, CM, CM, CM, BA, CM, CM, AL, AL, AL, AL, AL, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, XX, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, XX, BA, BA,
-    AL, AL, AL, AL, AL, AL, CM, AL, AL, AL, AL, AL, AL, XX, AL, AL, BB, BB, BA, BB, AL, AL, AL, AL,
-    AL, GL, GL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    AL, AL, AL, AL, BA, CM, AL, CM, AL, CM, OP_OP30, CL, OP_OP30, CL, CM, CM, AL, AL, AL, AL, AL,
+    AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, CM, CM, CM, CM,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, BA, CM, CM, CM, CM, CM, BA, CM, CM, AL, AL, AL, AL, AL,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, XX, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
+    XX, BA, BA, AL, AL, AL, AL, AL, AL, CM, AL, AL, AL, AL, AL, AL, XX, AL, AL, BB, BB, BA, BB, AL,
+    AL, AL, AL, AL, GL, GL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_4: [u8; 1024] = [
@@ -307,22 +311,22 @@ pub const UAX14_PROPERTIES_5: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, BA, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL, XX, XX, XX,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30, CL, XX,
+    XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, BA, BA, BA, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX, XX,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, CM, CM, CM, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, CM, CM, CM, BA, BA, XX, XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, CM, CM, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, XX, CM, CM, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA,
+    AL, AL, AL, AL, AL, BA, BA, BA, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX,
+    XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, CM, CM, CM, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, CM, CM, CM, BA, BA, XX, XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, CM, CM, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, XX, CM, CM, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA,
     SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA,
     SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA,
-    SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, BA, BA, NS, SA,
-    BA, AL, BA, PR, SA, SA, XX, XX, NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, XX, XX, XX, XX, XX, XX,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX,
+    SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, SA, BA, BA,
+    NS, SA, BA, AL, BA, PR, SA, SA, XX, XX, NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, XX, XX, XX, XX,
+    XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_6: [u8; 1024] = [
@@ -419,48 +423,49 @@ pub const UAX14_PROPERTIES_7: [u8; 1024] = [
 
 pub const UAX14_PROPERTIES_8: [u8; 1024] = [
     BA, BA, BA, BA, BA, BA, BA, GL, BA, BA, BA, ZW, CM, ZWJ, CM, CM, BA, GL, BA, BA, B2, AI, AI,
-    AL, QU, QU, OP, QU, QU, QU, OP, QU, AI, AI, AL, AL, IN, IN, IN, BA, BK, BK, CM, CM, CM, CM, CM,
-    GL, PO, PO, PO, PO, PO, PO, PO, PO, AL, QU, QU, AI, NS, NS, AL, AL, AL, AL, AL, AL, IS, OP, CL,
-    NS, NS, NS, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, BA, AL, BA, BA, BA, BA, AL, BA, BA,
-    BA, WJ, AL, AL, AL, AL, XX, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, AL, AL, XX, XX, AI, AL, AL,
-    AL, AL, AL, AL, AL, AL, OP, CL, AI, AL, AI, AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL,
-    XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, PR, PR, PR, PR, PR, PR, PR,
-    PO, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PO, PR, PR, PR, PR, PO, PR, PR, PO,
-    PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, PO, AL, AI, AL,
-    AL, AL, PO, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, PR, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, QU, QU, OP_OP30, QU, QU, QU, OP_OP30, QU, AI, AI, AL, AL, IN, IN, IN, BA, BK, BK, CM, CM,
+    CM, CM, CM, GL, PO, PO, PO, PO, PO, PO, PO, PO, AL, QU, QU, AI, NS, NS, AL, AL, AL, AL, AL, AL,
+    IS, OP_OP30, CL, NS, NS, NS, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, BA, AL, BA, BA,
+    BA, BA, AL, BA, BA, BA, WJ, AL, AL, AL, AL, XX, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, AL, AL,
+    XX, XX, AI, AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30, CL, AI, AL, AI, AI, AI, AI, AL, AL, AL,
+    AL, AL, AL, AL, AL, OP_OP30, CL, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX,
+    XX, XX, PR, PR, PR, PR, PR, PR, PR, PO, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR,
+    PO, PR, PR, PR, PR, PO, PR, PR, PO, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR, PR,
+    PR, PR, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, AL, AL, AL, PO, AL, AI, AL, AL, AL, PO, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL,
+    PR, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AI, AI, AL, AL, AL, AL, AL, AI, AL, AL, AI, AL, AI, AI, AI, AI, AI, AI, AI,
-    AI, AI, AI, AI, AI, AL, AL, AL, AL, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, XX, XX, XX, XX, AI, AI, AI, AI, AI, AI, AI,
-    AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AL, AL, AL, AL, AL, AI, AL, AL,
+    AI, AL, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AL, AL, AL, AL, AI, AI, AI, AI, AI, AI,
+    AI, AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, XX, XX,
+    XX, XX, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AI, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AI, AI, AL, AL, AL, AI, AI, AL, AL, AI, AL, AL, AL,
-    AI, AL, AI, PR, PR, AL, AI, AL, AL, AL, AL, AI, AL, AL, AI, AI, AI, AI, AL, AL, AI, AL, AI, AL,
-    AI, AI, AI, AI, AI, AI, AL, AI, AL, AL, AL, AL, AL, AI, AI, AI, AI, AL, AL, AL, AL, AI, AI, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AI, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AL, AL, AI, AI, AI, AI, AL, AL, AI, AI, AL, AL, AI,
-    AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AL, AL, AI,
-    AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AI, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AI, AI, AL, AL,
+    AL, AI, AI, AL, AL, AI, AL, AL, AL, AI, AL, AI, PR, PR, AL, AI, AL, AL, AL, AL, AI, AL, AL, AI,
+    AI, AI, AI, AL, AL, AI, AL, AI, AL, AI, AI, AI, AI, AI, AI, AL, AI, AL, AL, AL, AL, AL, AI, AI,
+    AI, AI, AL, AL, AL, AL, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AI, AL,
+    AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AL, AL, AI, AI,
+    AI, AI, AL, AL, AI, AI, AL, AL, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AI, AI, AL, AL, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI,
+    AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, IN, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL, OP, CL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL,
-    AL, AL, AL, ID, ID, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP_EA, CL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, IN, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30, CL, OP_OP30,
+    CL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, AL, AL, AL, AL, ID, ID, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, OP_EA, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, ID, ID, ID, ID, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, ID, ID, ID, ID, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL,
 ];
 
 pub const UAX14_PROPERTIES_9: [u8; 1024] = [
@@ -500,13 +505,14 @@ pub const UAX14_PROPERTIES_9: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AL, AL, AL, QU, QU, QU, QU, QU,
-    QU, AL, EX, EX, ID, AL, AL, AL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, AI, AI,
-    AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI,
-    AI, AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    QU, AL, EX, EX, ID, AL, AL, AL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30,
+    CL, OP_OP30, CL, OP_OP30, CL, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI,
+    AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, OP, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30, CL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
 ];
 
 pub const UAX14_PROPERTIES_10: [u8; 1024] = [
@@ -526,15 +532,13 @@ pub const UAX14_PROPERTIES_10: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP, CL, OP,
-    CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, OP, CL, OP, CL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, OP, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL,
+    OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30, CL, OP_OP30, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    OP_OP30, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
@@ -545,14 +549,17 @@ pub const UAX14_PROPERTIES_10: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AI, AI, AI, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AI, AI, AI, AI, AI, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
 ];
 
 pub const UAX14_PROPERTIES_11: [u8; 1024] = [
@@ -578,27 +585,28 @@ pub const UAX14_PROPERTIES_11: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL, XX,
     CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
     CM, CM, CM, CM, CM, CM, CM, CM, QU, QU, QU, QU, QU, QU, QU, QU, QU, QU, QU, QU, QU, QU, BA, BA,
-    BA, BA, BA, BA, BA, BA, AL, BA, OP, BA, AL, AL, QU, QU, AL, AL, QU, QU, OP, CL, OP, CL, OP, CL,
-    OP, CL, BA, BA, BA, BA, EX, AL, BA, BA, AL, BA, BA, AL, AL, AL, AL, AL, B2, B2, BA, BA, BA, AL,
-    BA, BA, OP, BA, BA, BA, BA, BA, BA, BA, BA, AL, BA, AL, BA, BA, AL, AL, AL, XX, XX, XX, XX, XX,
+    BA, BA, BA, BA, BA, BA, AL, BA, OP_OP30, BA, AL, AL, QU, QU, AL, AL, QU, QU, OP_OP30, CL,
+    OP_OP30, CL, OP_OP30, CL, OP_OP30, CL, BA, BA, BA, BA, EX, AL, BA, BA, AL, BA, BA, AL, AL, AL,
+    AL, AL, B2, B2, BA, BA, BA, AL, BA, BA, OP_OP30, BA, BA, BA, BA, BA, BA, BA, BA, AL, BA, AL,
+    BA, BA, AL, AL, AL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    XX, XX, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, XX, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
     ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
     ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
     ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, XX,
+    XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_12: [u8; 1024] = [
@@ -1397,37 +1405,37 @@ pub const UAX14_PROPERTIES_63: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, CL, OP, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    AL, AL, AL, AL, AL, AL, CL, OP_OP30, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, PO, AL, XX, XX, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
-    IS, CL, CL, IS, IS, EX, EX, OP_EA, CL, IN, XX, XX, XX, XX, XX, XX, CM, CM, CM, CM, CM, CM, CM,
-    CM, CM, CM, CM, CM, CM, CM, CM, CM, ID, ID, ID, ID, ID, OP_EA, CL, OP_EA, CL, OP_EA, CL, OP_EA,
-    CL, OP_EA, CL, OP_EA, CL, OP_EA, CL, OP_EA, CL, ID, ID, OP_EA, CL, ID, ID, ID, ID, ID, ID, ID,
-    CL, ID, CL, XX, NS, NS, EX, EX, ID, OP_EA, CL, OP_EA, CL, OP_EA, CL, ID, ID, ID, ID, ID, ID,
-    ID, ID, XX, ID, PR, PO, ID, XX, XX, XX, XX, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, PO, AL, XX, XX, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM,
+    CM, CM, IS, CL, CL, IS, IS, EX, EX, OP_EA, CL, IN, XX, XX, XX, XX, XX, XX, CM, CM, CM, CM, CM,
+    CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, CM, ID, ID, ID, ID, ID, OP_EA, CL, OP_EA, CL, OP_EA,
+    CL, OP_EA, CL, OP_EA, CL, OP_EA, CL, OP_EA, CL, OP_EA, CL, ID, ID, OP_EA, CL, ID, ID, ID, ID,
+    ID, ID, ID, CL, ID, CL, XX, NS, NS, EX, EX, ID, OP_EA, CL, OP_EA, CL, OP_EA, CL, ID, ID, ID,
+    ID, ID, ID, ID, ID, XX, ID, PR, PO, ID, XX, XX, XX, XX, AL, AL, AL, AL, AL, XX, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, WJ, XX, EX, ID, ID, PR, PO, ID, ID, OP_EA, CL, ID, ID,
-    CL, ID, CL, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, NS, NS, ID, ID, ID, EX, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    OP_EA, ID, CL, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, OP_EA, ID, CL, ID, OP_EA, CL, CL, OP_EA, CL, CL, NS, ID,
-    CJ, CJ, CJ, CJ, CJ, CJ, CJ, CJ, CJ, CJ, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, WJ, XX, EX, ID, ID, PR, PO, ID, ID, OP_EA,
+    CL, ID, ID, CL, ID, CL, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, NS, NS, ID, ID, ID, EX, ID,
     ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, NS, NS, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
-    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, XX, XX, ID, ID, ID, ID, ID,
-    ID, XX, XX, ID, ID, ID, ID, ID, ID, XX, XX, ID, ID, ID, ID, ID, ID, XX, XX, ID, ID, ID, XX, XX,
-    XX, PO, PR, ID, ID, ID, PR, PR, XX, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, CM, CM, CM, CB, AI, XX, XX,
+    ID, ID, OP_EA, ID, CL, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, OP_EA, ID, CL, ID, OP_EA, CL, CL, OP_EA, CL, CL,
+    NS, ID, CJ, CJ, CJ, CJ, CJ, CJ, CJ, CJ, CJ, CJ, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, NS, NS, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID,
+    ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, ID, XX, XX, XX, ID, ID, ID,
+    ID, ID, ID, XX, XX, ID, ID, ID, ID, ID, ID, XX, XX, ID, ID, ID, ID, ID, ID, XX, XX, ID, ID, ID,
+    XX, XX, XX, PO, PR, ID, ID, ID, PR, PR, XX, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, CM, CM, CM, CB, AI, XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_64: [u8; 1024] = [
@@ -1916,9 +1924,9 @@ pub const UAX14_PROPERTIES_76: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    OP, OP, OP, CL, CL, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, CL, AL, AL, AL, OP, CL,
-    OP, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    OP_OP30, OP_OP30, OP_OP30, CL, CL, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, CL, AL,
+    AL, AL, OP_OP30, CL, OP_OP30, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
@@ -1928,18 +1936,19 @@ pub const UAX14_PROPERTIES_76: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, OP, CL, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, OP_OP30, CL, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL,
 ];
 
 pub const UAX14_PROPERTIES_77: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, XX,
-    GL, GL, GL, GL, GL, GL, GL, OP, CL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    GL, GL, GL, GL, GL, GL, GL, OP_OP30, CL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
@@ -1979,7 +1988,7 @@ pub const UAX14_PROPERTIES_77: [u8; 1024] = [
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_81: [u8; 1024] = [
@@ -2002,12 +2011,12 @@ pub const UAX14_PROPERTIES_81: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, OP, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
+    AL, AL, AL, AL, AL, AL, OP_OP30, CL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
-    AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    AL, AL, AL, AL, AL, AL, AL, AL, AL, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
@@ -2025,7 +2034,7 @@ pub const UAX14_PROPERTIES_81: [u8; 1024] = [
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_90: [u8; 1024] = [
@@ -2549,7 +2558,7 @@ pub const UAX14_PROPERTIES_122: [u8; 1024] = [
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,
     AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, CM, CM, CM, CM, CM, CM, CM, AL, XX, XX, XX, XX,
-    NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, XX, XX, XX, XX, OP, OP, XX, XX, XX, XX, XX, XX, XX, XX,
+    NU, NU, NU, NU, NU, NU, NU, NU, NU, NU, XX, XX, XX, XX, OP_OP30, OP_OP30, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
@@ -2577,7 +2586,7 @@ pub const UAX14_PROPERTIES_122: [u8; 1024] = [
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
     XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
-    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
+    XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX, XX,
 ];
 
 pub const UAX14_PROPERTIES_123: [u8; 1024] = [
@@ -3110,8 +3119,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -128,     /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -3160,8 +3169,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -128,     /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -3210,8 +3219,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -1,          /* NS */
     -128,        /* NU */
-    -128,        /* OP */
     -128,        /* OP_EA */
+    -128,        /* OP_OP30 */
     -128,        /* PO */
     -128,        /* PR */
     -1,          /* QU */
@@ -3260,8 +3269,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3310,8 +3319,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -1,       /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -3360,8 +3369,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -128, /* NL */
     -128, /* NS */
     -128, /* NU */
-    -128, /* OP */
     -128, /* OP_EA */
+    -128, /* OP_OP30 */
     -128, /* PO */
     -128, /* PR */
     -128, /* QU */
@@ -3410,8 +3419,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -128,     /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3460,8 +3469,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3510,8 +3519,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,             /* NL */
     -1,             /* NS */
     -128,           /* NU */
-    -128,           /* OP */
     -128,           /* OP_EA */
+    -128,           /* OP_OP30 */
     -128,           /* PO */
     -128,           /* PR */
     -1,             /* QU */
@@ -3560,8 +3569,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -128,     /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -3610,8 +3619,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,             /* NL */
     -1,             /* NS */
     -1,             /* NU */
-    -128,           /* OP */
     -128,           /* OP_EA */
+    -128,           /* OP_OP30 */
     -128,           /* PO */
     -128,           /* PR */
     -1,             /* QU */
@@ -3660,8 +3669,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -128, /* NL */
     -128, /* NS */
     -128, /* NU */
-    -128, /* OP */
     -128, /* OP_EA */
+    -128, /* OP_OP30 */
     -128, /* PO */
     -128, /* PR */
     -128, /* QU */
@@ -3710,8 +3719,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3760,8 +3769,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3810,8 +3819,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3860,8 +3869,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -1,       /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -3910,8 +3919,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -3960,8 +3969,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4010,8 +4019,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -1,          /* NS */
     -1,          /* NU */
-    -1,          /* OP */
     -128,        /* OP_EA */
+    -1,          /* OP_OP30 */
     -1,          /* PO */
     -1,          /* PR */
     -1,          /* QU */
@@ -4060,8 +4069,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4110,8 +4119,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4160,8 +4169,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4210,8 +4219,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4260,8 +4269,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4310,8 +4319,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4360,8 +4369,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -1,       /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4410,8 +4419,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -128, /* NL */
     -128, /* NS */
     -128, /* NU */
-    -128, /* OP */
     -128, /* OP_EA */
+    -128, /* OP_OP30 */
     -128, /* PO */
     -128, /* PR */
     -128, /* QU */
@@ -4460,8 +4469,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -128, /* NL */
     -128, /* NS */
     -128, /* NU */
-    -128, /* OP */
     -128, /* OP_EA */
+    -128, /* OP_OP30 */
     -128, /* PO */
     -128, /* PR */
     -128, /* QU */
@@ -4510,8 +4519,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4560,8 +4569,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -128,     /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -4579,106 +4588,106 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -128,     /* HL_HY */
     -128,     /* QU_SP */
     -128,     /* RI_RI */
-    // OP
-    -1,       /* AI */
-    -1,       /* AL */
-    -1,       /* B2 */
-    -1,       /* BA */
-    -1,       /* BB */
-    -1,       /* BK */
-    -1,       /* CB */
-    -1,       /* CJ */
-    -1,       /* CL */
-    OP as i8, /* CM */
-    -1,       /* CP */
-    -1,       /* CR */
-    -1,       /* EB */
-    -1,       /* EM */
-    -1,       /* EX */
-    -1,       /* GL */
-    -1,       /* H2 */
-    -1,       /* H3 */
-    -1,       /* HL */
-    -1,       /* HY */
-    -1,       /* ID */
-    -1,       /* IN */
-    -1,       /* IS */
-    -1,       /* JL */
-    -1,       /* JT */
-    -1,       /* JV */
-    -1,       /* LF */
-    -1,       /* NL */
-    -1,       /* NS */
-    -1,       /* NU */
-    -1,       /* OP */
-    -1,       /* OP_EA */
-    -1,       /* PO */
-    -1,       /* PR */
-    -1,       /* QU */
-    -1,       /* RI */
-    -1,       /* SA */
-    -1,       /* SG */
-    OP as i8, /* SP */
-    -1,       /* SY */
-    -1,       /* WJ */
-    -1,       /* XX */
-    -1,       /* ZW */
-    OP as i8, /* ZWJ */
-    -1,       /* B2_SP */
-    -1,       /* CL_CP_SP */
-    -1,       /* HL_HY */
-    -1,       /* QU_SP */
-    -1,       /* RI_RI */
     // OP_EA
-    -1,          /* AI */
-    -1,          /* AL */
-    -1,          /* B2 */
-    -1,          /* BA */
-    -1,          /* BB */
-    -1,          /* BK */
-    -1,          /* CB */
-    -1,          /* CJ */
-    -1,          /* CL */
-    OP_EA as i8, /* CM */
-    -1,          /* CP */
-    -1,          /* CR */
-    -1,          /* EB */
-    -1,          /* EM */
-    -1,          /* EX */
-    -1,          /* GL */
-    -1,          /* H2 */
-    -1,          /* H3 */
-    -1,          /* HL */
-    -1,          /* HY */
-    -1,          /* ID */
-    -1,          /* IN */
-    -1,          /* IS */
-    -1,          /* JL */
-    -1,          /* JT */
-    -1,          /* JV */
-    -1,          /* LF */
-    -1,          /* NL */
-    -1,          /* NS */
-    -1,          /* NU */
-    -1,          /* OP */
-    -1,          /* OP_EA */
-    -1,          /* PO */
-    -1,          /* PR */
-    -1,          /* QU */
-    -1,          /* RI */
-    -1,          /* SA */
-    -1,          /* SG */
-    OP as i8,    /* SP */
-    -1,          /* SY */
-    -1,          /* WJ */
-    -1,          /* XX */
-    -1,          /* ZW */
-    OP_EA as i8, /* ZWJ */
-    -1,          /* B2_SP */
-    -1,          /* CL_CP_SP */
-    -1,          /* HL_HY */
-    -1,          /* QU_SP */
-    -1,          /* RI_RI */
+    -1,            /* AI */
+    -1,            /* AL */
+    -1,            /* B2 */
+    -1,            /* BA */
+    -1,            /* BB */
+    -1,            /* BK */
+    -1,            /* CB */
+    -1,            /* CJ */
+    -1,            /* CL */
+    OP_EA as i8,   /* CM */
+    -1,            /* CP */
+    -1,            /* CR */
+    -1,            /* EB */
+    -1,            /* EM */
+    -1,            /* EX */
+    -1,            /* GL */
+    -1,            /* H2 */
+    -1,            /* H3 */
+    -1,            /* HL */
+    -1,            /* HY */
+    -1,            /* ID */
+    -1,            /* IN */
+    -1,            /* IS */
+    -1,            /* JL */
+    -1,            /* JT */
+    -1,            /* JV */
+    -1,            /* LF */
+    -1,            /* NL */
+    -1,            /* NS */
+    -1,            /* NU */
+    -1,            /* OP_EA */
+    -1,            /* OP_OP30 */
+    -1,            /* PO */
+    -1,            /* PR */
+    -1,            /* QU */
+    -1,            /* RI */
+    -1,            /* SA */
+    -1,            /* SG */
+    OP_OP30 as i8, /* SP */
+    -1,            /* SY */
+    -1,            /* WJ */
+    -1,            /* XX */
+    -1,            /* ZW */
+    OP_EA as i8,   /* ZWJ */
+    -1,            /* B2_SP */
+    -1,            /* CL_CP_SP */
+    -1,            /* HL_HY */
+    -1,            /* QU_SP */
+    -1,            /* RI_RI */
+    // OP_OP30
+    -1,            /* AI */
+    -1,            /* AL */
+    -1,            /* B2 */
+    -1,            /* BA */
+    -1,            /* BB */
+    -1,            /* BK */
+    -1,            /* CB */
+    -1,            /* CJ */
+    -1,            /* CL */
+    OP_OP30 as i8, /* CM */
+    -1,            /* CP */
+    -1,            /* CR */
+    -1,            /* EB */
+    -1,            /* EM */
+    -1,            /* EX */
+    -1,            /* GL */
+    -1,            /* H2 */
+    -1,            /* H3 */
+    -1,            /* HL */
+    -1,            /* HY */
+    -1,            /* ID */
+    -1,            /* IN */
+    -1,            /* IS */
+    -1,            /* JL */
+    -1,            /* JT */
+    -1,            /* JV */
+    -1,            /* LF */
+    -1,            /* NL */
+    -1,            /* NS */
+    -1,            /* NU */
+    -1,            /* OP_EA */
+    -1,            /* OP_OP30 */
+    -1,            /* PO */
+    -1,            /* PR */
+    -1,            /* QU */
+    -1,            /* RI */
+    -1,            /* SA */
+    -1,            /* SG */
+    OP_OP30 as i8, /* SP */
+    -1,            /* SY */
+    -1,            /* WJ */
+    -1,            /* XX */
+    -1,            /* ZW */
+    OP_OP30 as i8, /* ZWJ */
+    -1,            /* B2_SP */
+    -1,            /* CL_CP_SP */
+    -1,            /* HL_HY */
+    -1,            /* QU_SP */
+    -1,            /* RI_RI */
     // PO
     -1,       /* AI */
     -1,       /* AL */
@@ -4710,8 +4719,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4760,8 +4769,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -4810,8 +4819,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -1,          /* NS */
     -1,          /* NU */
-    -1,          /* OP */
     -1,          /* OP_EA */
+    -1,          /* OP_OP30 */
     -1,          /* PO */
     -1,          /* PR */
     -1,          /* QU */
@@ -4860,8 +4869,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -1,          /* NS */
     -128,        /* NU */
-    -128,        /* OP */
     -128,        /* OP_EA */
+    -128,        /* OP_OP30 */
     -128,        /* PO */
     -128,        /* PR */
     -1,          /* QU */
@@ -4910,8 +4919,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -128,     /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -4960,8 +4969,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -5010,8 +5019,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,   /* NL */
     -128, /* NS */
     -128, /* NU */
-    -128, /* OP */
     -128, /* OP_EA */
+    -128, /* OP_OP30 */
     -128, /* PO */
     -128, /* PR */
     -128, /* QU */
@@ -5060,8 +5069,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -1,       /* QU */
@@ -5110,8 +5119,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -1,       /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -5160,8 +5169,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -1,       /* NS */
     -1,       /* NU */
-    -1,       /* OP */
     -128,     /* OP_EA */
+    -1,       /* OP_OP30 */
     -1,       /* PO */
     -1,       /* PR */
     -1,       /* QU */
@@ -5210,8 +5219,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,       /* NL */
     -128,     /* NS */
     -128,     /* NU */
-    -128,     /* OP */
     -128,     /* OP_EA */
+    -128,     /* OP_OP30 */
     -128,     /* PO */
     -128,     /* PR */
     -128,     /* QU */
@@ -5260,8 +5269,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1, /* NL */
     -1, /* NS */
     -1, /* NU */
-    -1, /* OP */
     -1, /* OP_EA */
+    -1, /* OP_OP30 */
     -1, /* PO */
     -1, /* PR */
     -1, /* QU */
@@ -5310,8 +5319,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -128,        /* NS */
     -128,        /* NU */
-    -128,        /* OP */
     -128,        /* OP_EA */
+    -128,        /* OP_OP30 */
     -128,        /* PO */
     -128,        /* PR */
     -128,        /* QU */
@@ -5360,8 +5369,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,             /* NL */
     -1,             /* NS */
     -128,           /* NU */
-    -128,           /* OP */
     -128,           /* OP_EA */
+    -128,           /* OP_OP30 */
     -128,           /* PO */
     -128,           /* PR */
     -128,           /* QU */
@@ -5410,8 +5419,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -1,          /* NS */
     -1,          /* NU */
-    -1,          /* OP */
     -1,          /* OP_EA */
+    -1,          /* OP_OP30 */
     -1,          /* PO */
     -1,          /* PR */
     -1,          /* QU */
@@ -5460,8 +5469,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -128,        /* NS */
     -128,        /* NU */
-    -1,          /* OP */
     -1,          /* OP_EA */
+    -1,          /* OP_OP30 */
     -128,        /* PO */
     -128,        /* PR */
     -128,        /* QU */
@@ -5510,8 +5519,8 @@ pub const UAX14_RULE_TABLE: [i8; 2401] = [
     -1,          /* NL */
     -1,          /* NS */
     -128,        /* NU */
-    -128,        /* OP */
     -128,        /* OP_EA */
+    -128,        /* OP_OP30 */
     -128,        /* PO */
     -128,        /* PR */
     -1,          /* QU */

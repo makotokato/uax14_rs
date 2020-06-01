@@ -187,7 +187,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
             // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
             if current_prop == PR
                 || current_prop == PO
-                || current_prop == OP
+                || current_prop == OP_OP30
                 || current_prop == OP_EA
                 || current_prop == HY
                 || current_prop == NU
@@ -207,7 +207,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                     }
                     // If reaching EOF, restore iterator
                 }
-                if state == OP || state == HY || state == OP_EA {
+                if state == OP_OP30 || state == HY || state == OP_EA {
                     current = self.iter.next();
                     if current.is_some() {
                         state = get_linebreak_property(current.unwrap().1);
@@ -554,7 +554,7 @@ macro_rules! iterator_impl {
             fn process_lb25(&mut self, current_prop: u8) -> bool {
                 if current_prop != PR
                     && current_prop != PO
-                    && current_prop != OP
+                    && current_prop != OP_OP30
                     && current_prop != OP_EA
                     && current_prop != HY
                     && current_prop != NU
@@ -570,7 +570,7 @@ macro_rules! iterator_impl {
                         state = self.get_linebreak_property();
                     }
                 }
-                if state == OP || state == HY || state == OP_EA {
+                if state == OP_OP30 || state == HY || state == OP_EA {
                     self.iterator_next();
                     if !self.is_eof() {
                         state = self.get_linebreak_property();
@@ -688,9 +688,9 @@ mod tests {
     fn linebreak_propery() {
         assert_eq!(get_linebreak_property('\u{0020}'), SP);
         assert_eq!(get_linebreak_property('\u{0022}'), QU);
-        assert_eq!(get_linebreak_property('('), OP);
+        assert_eq!(get_linebreak_property('('), OP_OP30);
         assert_eq!(get_linebreak_property('\u{0030}'), NU);
-        assert_eq!(get_linebreak_property('['), OP);
+        assert_eq!(get_linebreak_property('['), OP_OP30);
         assert_eq!(get_linebreak_property('\u{1f3fb}'), EM);
         assert_eq!(get_linebreak_property('\u{20000}'), ID);
         assert_eq!(get_linebreak_property('\u{e0020}'), CM);

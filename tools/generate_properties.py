@@ -44,15 +44,24 @@ with open('LineBreak.txt', 'r') as file:
                 length = int(m.group(2), 16) - int(m.group(1), 16) + 1
                 s = int(m.group(1), 16)
                 for x in range(length):
-                    prop[s + x] = m.group(3)
+                    if m.group(3) == "OP":
+                        if ea_table[s + x] in ("F", "W", "H"):
+                            prop[s + x] = "OP_EA"
+                        else:
+                            prop[s + x] = "OP_OP30"
+                    else:
+                        prop[s + x] = m.group(3)
             else:
                 m = re.search("([0-9A-F]{1,6})\;([0-9A-Z]{2,})", line)
                 if m:
                     if int(m.group(1), 16) >= 0x20000:
                         break
                     # for LB30
-                    if m.group(2) == "OP" and ea_table[int(m.group(1), 16)] in ("F", "W", "H"):
-                        prop[int(m.group(1), 16)] = "OP_EA"
+                    if m.group(2) == "OP":
+                        if ea_table[int(m.group(1), 16)] in ("F", "W", "H"):
+                            prop[int(m.group(1), 16)] = "OP_EA"
+                        else:
+                            prop[int(m.group(1), 16)] = "OP_OP30"
                     elif m.group(2) == "CP" and ea_table[int(m.group(1), 16)] in ("F", "W", "H"):
                         prop[int(m.group(1), 16)] = "CP_EA"
                     else:
@@ -122,8 +131,8 @@ for i in prop_type:
                 rule.append(i)
                 continue
             # (LB14)
-            if i in ("OP", "OP_EA"):
-                rule.append("OP")
+            if i in ("OP_OP30", "OP_EA"):
+                rule.append("OP_OP30")
                 continue
             # (LB15)
             if i in ("QU", "QU_SP"):
@@ -190,12 +199,12 @@ for i in prop_type:
             continue
 
         # LB14
-        if i in ("OP", "OP_EA"):
+        if i in ("OP_OP30", "OP_EA"):
             rule.append("x")
             continue
 
         # LB15
-        if i in ("QU", "QU_SP") and j in ("OP", "OP_EA"):
+        if i in ("QU", "QU_SP") and j in ("OP_OP30", "OP_EA"):
             rule.append("x")
             continue
         if i == "QU_SP":
@@ -340,7 +349,7 @@ for i in prop_type:
             continue
 
         # XXX LB30
-        if i in ("AL", "HL", "NU") and j == "OP":
+        if i in ("AL", "HL", "NU") and j == "OP_OP30":
             rule.append("x")
             continue
         if i == "CP" and j in ("AL", "HL", "NU"):
@@ -372,6 +381,10 @@ for i in prop_type:
     count = count + 1
 
 print ("pub const PROP_COUNT: usize = %d;" % (count - 1));
+print()
+
+print ("pub const BREAK_RULE: i8 = -128;");
+print ("pub const KEEP_RULE: i8 = -1;");
 print()
 
 for a in range(128):

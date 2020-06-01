@@ -49,6 +49,7 @@ pub const QU_SP: u8 = 48;
 pub const RI_RI: u8 = 49;
 pub const PROP_COUNT: usize = 49;
 
+#[allow(dead_code)]
 pub const BREAK_RULE: i8 = -128;
 pub const KEEP_RULE: i8 = -1;
 

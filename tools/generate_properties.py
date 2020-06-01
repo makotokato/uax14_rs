@@ -383,8 +383,9 @@ for i in prop_type:
 print ("pub const PROP_COUNT: usize = %d;" % (count - 1));
 print()
 
-print ("pub const BREAK_RULE: i8 = -128;");
-print ("pub const KEEP_RULE: i8 = -1;");
+print ("#[allow(dead_code)]")
+print ("pub const BREAK_RULE: i8 = -128;")
+print ("pub const KEEP_RULE: i8 = -1;")
 print()
 
 for a in range(128):

@@ -13,7 +13,7 @@ pub enum LineBreakRule {
     Normal,
     Strict,
     Loose,
-    Anywhare,
+    Anywhere,
 }
 
 #[derive(Copy, Clone, PartialEq)]

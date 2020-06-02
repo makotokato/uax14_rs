@@ -68,6 +68,27 @@ fn loose(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>
     assert_eq!(expect_utf16, result, "{}", s);
 }
 
+fn anywhere(s: &str, ja_zh: bool, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
+    let iter = LineBreakIterator::new_with_break_rule(
+        s,
+        LineBreakRule::Anywhere,
+        WordBreakRule::Normal,
+        ja_zh,
+    );
+    let result: Vec<usize> = iter.map(|x| x).collect();
+    assert_eq!(expect_utf8, result, "{}", s);
+
+    let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
+        &s_utf16,
+        LineBreakRule::Anywhere,
+        WordBreakRule::Normal,
+        ja_zh,
+    );
+    let result: Vec<usize> = iter.map(|x| x).collect();
+    assert_eq!(expect_utf16, result, "{}", s);
+}
+
 #[test]
 fn linebreak_strict() {
     // from css/css-text/line-break/line-break-*-011.xht
@@ -148,4 +169,29 @@ fn linebreak_loose() {
 
     // from css/css-text/line-break/line-break-*-018.xht
     loose("サ\u{20AC}サ", true, vec![3, 6, 9], vec![1, 2, 3]);
+}
+
+#[test]
+fn linebreak_anywhere() {
+    // css/css-text/line-break/line-break-anywhere-003.html
+    anywhere("latin", true, vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5]);
+
+    // css/css-text/line-break/line-break-anywhere-004.html
+    // css/css-text/line-break/line-break-anywhere-005.html
+    anywhere("X X", true, vec![1, 2, 3], vec![1, 2, 3]);
+
+    // css/css-text/line-break/line-break-anywhere-006.html
+    // css/css-text/line-break/line-break-anywhere-009.html
+    anywhere("X\u{00A0}X", true, vec![1, 3, 4], vec![1, 2, 3]);
+
+    // css/css-text/line-break/line-break-anywhere-007.html
+    // css/css-text/line-break/line-break-anywhere-008.html
+    anywhere("XX...", true, vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5]);
+
+    // css/css-text/line-break/line-break-anywhere-011.html
+    // css/css-text/line-break/line-break-anywhere-013.html
+    anywhere("XX///", true, vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5]);
+
+    // css/css-text/line-break/line-break-anywhere-012.html
+    anywhere("XX\\\\\\", true, vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5]);
 }

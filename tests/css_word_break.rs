@@ -94,7 +94,7 @@ fn wordbreak_keepall() {
 
     // from css/css-text/word-break/word-break-keep-all-002.html
     let s = "한글이";
-    keep_all(s, vec![9], vec![1, 2, 3]);
+    keep_all(s, vec![9], vec![3]);
 
     // from css/css-text/word-break/word-break-keep-all-003.html
     let s = "และ";

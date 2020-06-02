@@ -161,6 +161,18 @@ fn is_break(left: u8, right: u8) -> bool {
 }
 
 #[inline]
+fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
+    (left == AI || left == AL || left == ID || left == NU || left == HY || left == H2 || left == H3)
+        && (right == AI
+            || right == AL
+            || right == ID
+            || right == NU
+            || right == HY
+            || right == H2
+            || right == H3)
+}
+
+#[inline]
 fn get_break_state(left: u8, right: u8) -> i8 {
     UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
 }
@@ -297,21 +309,7 @@ impl<'a> Iterator for LineBreakIterator<'a> {
                         _ => current_prop,
                     };
                 } else if self.word_break_rule == WordBreakRule::KeepAll {
-                    if (current_prop == AI
-                        || current_prop == AL
-                        || current_prop == ID
-                        || current_prop == NU
-                        || current_prop == HY
-                        || current_prop == H2
-                        || current_prop == H3)
-                        && (right_prop == AI
-                            || right_prop == AL
-                            || right_prop == ID
-                            || right_prop == NU
-                            || right_prop == HY
-                            || right_prop == H2
-                            || right_prop == H3)
-                    {
+                    if is_non_break_by_keepall(current_prop, right_prop) {
                         continue;
                     }
                 }
@@ -458,15 +456,7 @@ macro_rules! iterator_impl {
                                 _ => left_prop,
                             };
                         } else if self.word_break_rule == WordBreakRule::KeepAll {
-                            if (left_prop == AI
-                                || left_prop == AL
-                                || left_prop == ID
-                                || left_prop == NU)
-                                && (right_prop == AI
-                                    || right_prop == AL
-                                    || right_prop == ID
-                                    || right_prop == NU)
-                            {
+                            if is_non_break_by_keepall(left_prop, right_prop) {
                                 continue;
                             }
                         }

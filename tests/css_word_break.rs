@@ -80,6 +80,31 @@ fn wordbreak_breakall() {
         vec![6, 12, 19, 25, 31, 38, 44, 50, 56],
         vec![2, 4, 7, 9, 11, 14, 16, 18, 20],
     );
+
+    // from css/css-text/word-break/word-break-break-all-014.html
+   let s  = "💖💔";
+    break_all(
+        s,
+        vec![4, 8],
+        vec![4], // TODO
+    );
+
+
+    // from css/css-text/word-break/word-break-break-all-023.html
+    let s = "XX XX\\\\\\";
+    break_all(
+        s,
+        vec![1, 3, 4, 5, 6, 7, 8],
+        vec![1, 3, 4, 5, 6, 7, 8],
+    );
+
+    // from css/css-text/word-break/word-break-break-all-026.html
+    let s = "XX XXX///";
+    break_all(
+        s,
+        vec![1, 3, 4, 5, 9],
+        vec![1, 3, 4, 5, 9],
+    );
 }
 
 #[test]

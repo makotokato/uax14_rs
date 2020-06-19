@@ -626,6 +626,15 @@ macro_rules! iterator_impl {
                 if self.is_eof() {
                     return None;
                 }
+
+                if size_of::<$attr>() == size_of::<u8>() {
+                    self.current = self.current + 1;
+                    if self.is_eof() {
+                        return None;
+                    }
+                    return Some(self.iter[self.current]);
+                }
+
                 self.current = self.current + 1;
                 let prev = self.iter[self.current - 1] as u32;
                 if (prev & 0xfc00) == 0xd800

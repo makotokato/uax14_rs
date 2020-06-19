@@ -86,7 +86,7 @@ fn wordbreak_breakall() {
     break_all(
         s,
         vec![4, 8],
-        vec![4], // TODO
+        vec![3], // TODO
     );
 
 

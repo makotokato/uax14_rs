@@ -752,7 +752,6 @@ impl<'a> LineBreakIteratorLatin1<'a> {
 
 // UTF16
 
-/*
 #[derive(Clone)]
 struct UTF16Indices<'a> {
     front_offset: usize,
@@ -830,16 +829,19 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
-        get_linebreak_property_utf32(self.current.unwrap().1 as u32)
+        get_linebreak_property_utf32_with_rule(self.current.unwrap().1, self.break_rule, self.ja_zh)
+    }
+
+    fn get_linebreak_property_with_rule(&mut self, c: u32) -> u8 {
+        get_linebreak_property_utf32_with_rule(c, self.break_rule, self.ja_zh)
     }
 
     fn is_break_by_normal(&mut self) -> bool {
         is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
     }
 }
-*/
 
-iterator_impl!(LineBreakIteratorUTF16, u16);
+//iterator_impl!(LineBreakIteratorUTF16, u16);
 
 #[cfg(test)]
 mod tests {

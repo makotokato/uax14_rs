@@ -216,8 +216,7 @@ macro_rules! break_iterator_impl {
                         }
                         if state == NU {
                             let mut backup = self.iter.clone();
-                            current_prop = state;
-
+                            let mut prev_prop = state;
                             let mut prev = current;
 
                             current = self.iter.next();
@@ -231,8 +230,7 @@ macro_rules! break_iterator_impl {
                             loop {
                                 if state == NU || state == SY || state == IS {
                                     backup = self.iter.clone();
-                                    current_prop = state;
-
+                                    prev_prop = state;
                                     prev = current;
 
                                     current = self.iter.next();
@@ -251,8 +249,7 @@ macro_rules! break_iterator_impl {
                             }
                             if state == CL || state == CP {
                                 backup = self.iter.clone();
-                                current_prop = state;
-
+                                prev_prop = state;
                                 prev = current;
 
                                 current = self.iter.next();
@@ -270,6 +267,7 @@ macro_rules! break_iterator_impl {
                             // Restore iterator that is NU/CL/CP position.
                             self.iter = backup;
                             self.current = prev;
+                            current_prop = prev_prop;
                         } else {
                             // Not match for LB25
                             self.iter = backup;

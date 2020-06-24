@@ -1,7 +1,7 @@
-use crate::LineBreakIteratorLatin1;
-use crate::LineBreakIteratorUTF16;
-use crate::LineBreakRule;
-use crate::WordBreakRule;
+use crate::line_breaker::LineBreakIteratorLatin1;
+use crate::line_breaker::LineBreakIteratorUTF16;
+use crate::line_breaker::LineBreakRule;
+use crate::line_breaker::WordBreakRule;
 
 /// Process line break using C-like FFI
 #[no_mangle]

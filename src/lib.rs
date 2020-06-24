@@ -1,4 +1,5 @@
 mod properties;
+mod ffi;
 
 extern crate unicode_width;
 
@@ -214,7 +215,11 @@ macro_rules! break_iterator_impl {
                             }
                             // If reaching EOF, restore iterator
                         }
-                        if state == NU {
+
+                        if current.is_none() || state != NU {
+                            // Not match for LB25 due to EOF. Restore before parsing.
+                            self.iter = backup;
+                        } else {
                             let mut backup = self.iter.clone();
                             let mut prev_prop = state;
                             let mut prev = current;
@@ -253,24 +258,23 @@ macro_rules! break_iterator_impl {
                                 prev = current;
 
                                 current = self.iter.next();
-                                if current.is_some() {
-                                    state =
-                                        self.get_linebreak_property_with_rule(current.unwrap().1);
+                                if current.is_none() {
+                                    // EOF
+                                    self.current = None;
+                                    return Some(
+                                        prev.unwrap().0 + $name::char_len(prev.unwrap().1),
+                                    );
                                 }
-                                // If reaching EOF, restore iterator
+                                state = self.get_linebreak_property_with_rule(current.unwrap().1);
                             }
                             if state == PR || state == PO {
                                 self.current = current;
-                                continue;
+                            } else {
+                                // Restore iterator that is NU/CL/CP position.
+                                self.iter = backup;
+                                self.current = prev;
+                                current_prop = prev_prop;
                             }
-
-                            // Restore iterator that is NU/CL/CP position.
-                            self.iter = backup;
-                            self.current = prev;
-                            current_prop = prev_prop;
-                        } else {
-                            // Not match for LB25
-                            self.iter = backup;
                         }
                     }
 
@@ -286,42 +290,39 @@ macro_rules! break_iterator_impl {
                     let right_prop = self.get_linebreak_property();
 
                     // CSS word-break property handling
-                    {
-                        if self.word_break_rule == WordBreakRule::BreakAll {
-                            current_prop = match current_prop {
-                                AL => ID,
-                                NU => ID,
-                                SA => ID,
-                                _ => current_prop,
-                            };
-                        } else if self.word_break_rule == WordBreakRule::KeepAll {
-                            if is_non_break_by_keepall(current_prop, right_prop) {
-                                continue;
-                            }
+                    if self.word_break_rule == WordBreakRule::BreakAll {
+                        current_prop = match current_prop {
+                            AL => ID,
+                            NU => ID,
+                            SA => ID,
+                            _ => current_prop,
+                        };
+                    } else if self.word_break_rule == WordBreakRule::KeepAll {
+                        if is_non_break_by_keepall(current_prop, right_prop) {
+                            continue;
                         }
                     }
 
                     // CSS line-break property handling
-                    {
-                        if self.break_rule == LineBreakRule::Normal {
-                            if self.is_break_by_normal() {
-                                return Some(self.current.unwrap().0);
-                            }
-                        } else if self.break_rule == LineBreakRule::Loose {
-                            if is_break_utf32_by_loose(
-                                left_codepoint.unwrap().1 as u32,
-                                self.current.unwrap().1 as u32,
-                                current_prop,
-                                right_prop,
-                                self.ja_zh,
-                            ) {
-                                return Some(self.current.unwrap().0);
-                            }
-                        } else if self.break_rule == LineBreakRule::Anywhere {
+                    if self.break_rule == LineBreakRule::Normal {
+                        if self.is_break_by_normal() {
                             return Some(self.current.unwrap().0);
                         }
+                    } else if self.break_rule == LineBreakRule::Loose {
+                        if is_break_utf32_by_loose(
+                            left_codepoint.unwrap().1 as u32,
+                            self.current.unwrap().1 as u32,
+                            current_prop,
+                            right_prop,
+                            self.ja_zh,
+                        ) {
+                            return Some(self.current.unwrap().0);
+                        }
+                    } else if self.break_rule == LineBreakRule::Anywhere {
+                        return Some(self.current.unwrap().0);
                     }
 
+                    // If break_state is equals or grater than 0, it is alias of property.
                     let mut break_state = get_break_state(current_prop, right_prop);
                     if break_state >= 0 as i8 {
                         loop {

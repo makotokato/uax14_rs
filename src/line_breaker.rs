@@ -67,14 +67,8 @@ fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh:
 #[inline]
 fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
     match codepoint as u32 {
-        0x3005 => true,
         0x301C => ja_zh,
-        0x303B => true,
-        0x309D => true,
-        0x309E => true,
         0x30A0 => ja_zh,
-        0x30FD => true,
-        0x30FE => true,
         _ => false,
     }
 }

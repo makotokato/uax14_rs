@@ -129,8 +129,7 @@ fn linebreak_normal() {
     normal("サ\u{301C}サ", true, vec![3, 6, 9], vec![1, 2, 3]);
 
     // from css/css-text/line-break/line-break-*-014.xht
-    // TODO: incorrect
-    //normal("サ\u{3005}サ", true, vec![3, 6, 9], vec![1, 2, 3]);
+    normal("サ\u{3005}サ", true, vec![6, 9], vec![2, 3]);
 
     // from css/css-text/line-break/line-break-*-015.xht
     normal("サ\u{2025}\u{2025}サ", true, vec![9, 12], vec![3, 4]);

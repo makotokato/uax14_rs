@@ -34,6 +34,7 @@ pub extern "C" fn line_breaker_utf16(
     };
 
     LineBreakIteratorUTF16::new_with_break_rule(str_buffer.as_ref(), line_break, word_break, ja_zh)
+        .filter(|i| i < &length)
         .for_each(|i| break_buffer[i] = 1);
 }
 
@@ -74,5 +75,26 @@ pub extern "C" fn line_breaker_latin1(
         word_break,
         ja_zh,
     )
+    .filter(|i| i < &length)
     .for_each(|i| break_buffer[i] = 1);
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ffi::line_breaker_latin1;
+
+    #[test]
+    fn ffi() {
+        let mut break_output: [u8; 11] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        line_breaker_latin1(
+            "hello world".as_ptr(),
+            11,
+            0,
+            0,
+            false,
+            break_output.as_mut_ptr(),
+        );
+        assert_eq!(break_output[5], 0, "no break point");
+        assert_eq!(break_output[6], 1, "break point");
+    }
 }

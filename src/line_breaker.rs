@@ -506,14 +506,14 @@ impl<'a> Iterator for UTF16Indices<'a> {
         self.front_offset += 1;
 
         if (ch & 0xfc00) != 0xd800 {
-            Some((index, ch));
+            return Some((index, ch as u32));
         }
 
         let mut ch = ch as u32;
         if self.front_offset < self.iter.len() {
             let next = self.iter[self.front_offset] as u32;
             if (next & 0xfc00) == 0xdc00 {
-                ch = ((ch & 0x3ff) << 10) + (next & 0x3ff);
+                ch = ((ch & 0x3ff) << 10) + (next & 0x3ff) + 0x10000;
                 self.front_offset += 1;
                 return Some((index, ch));
             }

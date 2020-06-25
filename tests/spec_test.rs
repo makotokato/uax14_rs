@@ -88,7 +88,7 @@ fn run_line_break_test() {
                 }
 
                 if ch as u32 >= 0x10000 {
-                    u16_vec.push((((ch as u32) >> 10) | 0xd800) as u16);
+                    u16_vec.push((((ch as u32 - 0x10000) >> 10) | 0xd800) as u16);
                     u16_vec.push((((ch as u32) & 0x3ff) | 0xdc00) as u16);
                     u16_len = u16_len + 2;
                 } else {

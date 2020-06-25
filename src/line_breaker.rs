@@ -66,17 +66,21 @@ fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh:
 
 #[inline]
 fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
+    if !ja_zh {
+        return false;
+    }
+
     match codepoint as u32 {
-        0x301C => ja_zh,
-        0x30A0 => ja_zh,
+        0x301C => true,
+        0x30A0 => true,
         _ => false,
     }
 }
 
 #[inline]
-fn is_break_by_loose(
-    left_codepoint: char,
-    right_codepoint: char,
+fn is_break_utf32_by_loose(
+    left_codepoint: u32,
+    right_codepoint: u32,
     left_prop: u8,
     right_prop: u8,
     ja_zh: bool,
@@ -84,14 +88,20 @@ fn is_break_by_loose(
     if left_prop == IN && right_prop == IN {
         return true;
     }
-    if ja_zh && right_prop == PO && UnicodeWidthChar::width_cjk(right_codepoint).unwrap() == 2 {
+    if ja_zh
+        && right_prop == PO
+        && UnicodeWidthChar::width_cjk(char::from_u32(right_codepoint).unwrap()).unwrap() == 2
+    {
         return true;
     }
-    if ja_zh && left_prop == PR && UnicodeWidthChar::width_cjk(left_codepoint).unwrap() == 2 {
+    if ja_zh
+        && left_prop == PR
+        && UnicodeWidthChar::width_cjk(char::from_u32(left_codepoint).unwrap()).unwrap() == 2
+    {
         return true;
     }
 
-    match right_codepoint as u32 {
+    match right_codepoint {
         0x2010 => true,
         0x2013 => true,
         0x203C => ja_zh,
@@ -114,23 +124,6 @@ fn is_break_by_loose(
         0xFF65 => ja_zh,
         _ => false,
     }
-}
-
-#[inline]
-fn is_break_utf32_by_loose(
-    left_codepoint: u32,
-    right_codepoint: u32,
-    left_prop: u8,
-    right_prop: u8,
-    ja_zh: bool,
-) -> bool {
-    is_break_by_loose(
-        char::from_u32(left_codepoint).unwrap(),
-        char::from_u32(right_codepoint).unwrap(),
-        left_prop,
-        right_prop,
-        ja_zh,
-    )
 }
 
 #[inline]

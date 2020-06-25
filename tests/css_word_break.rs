@@ -50,7 +50,7 @@ fn keep_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
 #[test]
 fn wordbreak_breakall() {
     // from css/css-text/word-break/word-break-break-all-000.html
-    let s = "日本語";
+    let s = "\u{65e5}\u{672c}\u{8a9e}";
     break_all(s, vec![3, 6, 9], vec![1, 2, 3]);
 
     // from css/css-text/word-break/word-break-break-all-001.html
@@ -58,7 +58,7 @@ fn wordbreak_breakall() {
     break_all(s, vec![1, 2, 3, 4, 5], vec![1, 2, 3, 4, 5]);
 
     // from css/css-text/word-break/word-break-break-all-002.html
-    let s = "한글이";
+    let s = "\u{d55c}\u{ae00}\u{c77e}";
     break_all(s, vec![3, 6, 9], vec![1, 2, 3]);
 
     // from css/css-text/word-break/word-break-break-all-004.html
@@ -82,11 +82,11 @@ fn wordbreak_breakall() {
     );
 
     // from css/css-text/word-break/word-break-break-all-014.html
-   let s  = "💖💔";
+   let s  = "\u{1f496}\u{1f494}";
     break_all(
         s,
         vec![4, 8],
-        vec![3], // TODO
+        vec![2, 4],
     );
 
 
@@ -114,7 +114,7 @@ fn wordbreak_keepall() {
     keep_all(s, vec![5], vec![5]);
 
     // from css/css-text/word-break/word-break-keep-all-001.html
-    let s = "日本語";
+    let s = "\u{65e5}\u{672c}\u{8a9e}";
     keep_all(s, vec![9], vec![3]);
 
     // from css/css-text/word-break/word-break-keep-all-002.html

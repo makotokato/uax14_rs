@@ -85,7 +85,7 @@ fn is_break_utf32_by_loose(
     right_prop: u8,
     ja_zh: bool,
 ) -> bool {
-    if left_prop == IN && right_prop == IN {
+    if right_prop == IN {
         return true;
     }
     if ja_zh
@@ -102,14 +102,14 @@ fn is_break_utf32_by_loose(
     }
 
     match right_codepoint {
-        0x2010 => true,
-        0x2013 => true,
-        0x203C => ja_zh,
-        0x2047 => ja_zh,
-        0x2048 => ja_zh,
-        0x2049 => ja_zh,
-        0x3005 => true,
-        0x301C => ja_zh,
+        0x2010 => true,  // BA - HYPHEN
+        0x2013 => true,  // BA - EN DASH
+        0x203C => ja_zh, // NS - DOUBLE EXCLAMATION MARK.
+        0x2047 => ja_zh, // NS - DOUBLE QUESTION MARK
+        0x2048 => ja_zh, // NS -
+        0x2049 => ja_zh, // NS -
+        0x3005 => true,  // NS -
+        0x301C => ja_zh, // NS -
         0x303B => true,
         0x309D => true,
         0x309E => true,
@@ -121,7 +121,7 @@ fn is_break_utf32_by_loose(
         0xFF1A => ja_zh,
         0xFF1B => ja_zh,
         0xFF1F => ja_zh,
-        0xFF65 => ja_zh,
+        0xFF65 => ja_zh, // NS - HALFWIDTH KATAKANA MIDDLE DOT
         _ => false,
     }
 }
@@ -186,9 +186,26 @@ macro_rules! break_iterator_impl {
                         let mut state = current_prop;
 
                         if state == PR || state == PO {
+                            let left = current;
+                            let left_prop = current_prop;
+
                             current = self.iter.next();
                             if current.is_some() {
                                 state = self.get_linebreak_property_with_rule(current.unwrap().1);
+
+                                // If left is PR, it might apply loose rule.
+                                if self.break_rule == LineBreakRule::Loose {
+                                    if is_break_utf32_by_loose(
+                                        left.unwrap().1 as u32,
+                                        current.unwrap().1 as u32,
+                                        left_prop,
+                                        state,
+                                        self.ja_zh,
+                                    ) {
+                                        // reset state since this cannot apply LB25.
+                                        state = 0;
+                                    }
+                                }
                             }
                             // If reaching EOF, restore iterator
                         }

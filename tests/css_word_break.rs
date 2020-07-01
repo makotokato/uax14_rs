@@ -82,29 +82,20 @@ fn wordbreak_breakall() {
     );
 
     // from css/css-text/word-break/word-break-break-all-014.html
-   let s  = "\u{1f496}\u{1f494}";
-    break_all(
-        s,
-        vec![4, 8],
-        vec![2, 4],
-    );
-
+    let s = "\u{1f496}\u{1f494}";
+    break_all(s, vec![4, 8], vec![2, 4]);
 
     // from css/css-text/word-break/word-break-break-all-023.html
     let s = "XX XX\\\\\\";
-    break_all(
-        s,
-        vec![1, 3, 4, 5, 6, 7, 8],
-        vec![1, 3, 4, 5, 6, 7, 8],
-    );
+    break_all(s, vec![1, 3, 4, 5, 6, 7, 8], vec![1, 3, 4, 5, 6, 7, 8]);
 
     // from css/css-text/word-break/word-break-break-all-026.html
     let s = "XX XXX///";
-    break_all(
-        s,
-        vec![1, 3, 4, 5, 9],
-        vec![1, 3, 4, 5, 9],
-    );
+    break_all(s, vec![1, 3, 4, 5, 9], vec![1, 3, 4, 5, 9]);
+
+    // css/css-text/word-break/word-break-break-all-inline-008.html
+    let s = "X.";
+    break_all(s, vec![2], vec![2]);
 }
 
 #[test]

@@ -66,13 +66,9 @@ fn get_linebreak_property_with_rule(codepoint: char, rule: LineBreakRule, ja_zh:
 
 #[inline]
 fn is_break_utf32_by_normal(codepoint: u32, ja_zh: bool) -> bool {
-    if !ja_zh {
-        return false;
-    }
-
     match codepoint as u32 {
-        0x301C => true,
-        0x30A0 => true,
+        0x301C => ja_zh,
+        0x30A0 => ja_zh,
         _ => false,
     }
 }
@@ -85,45 +81,63 @@ fn is_break_utf32_by_loose(
     right_prop: u8,
     ja_zh: bool,
 ) -> bool {
-    if right_prop == IN {
+    // breaks before hyphens
+    if right_prop == BA {
+        if right_codepoint == 0x2010 || right_codepoint == 0x2013 {
+            return true;
+        }
+    } else if right_prop == NS {
+        // breaks before certain CJK hyphen-like characters
+        if right_codepoint == 0x301C || right_codepoint == 0x30A0 {
+            return ja_zh;
+        }
+
+        // breaks before iteration marks
+        if right_codepoint == 0x3005
+            || right_codepoint == 0x303B
+            || right_codepoint == 0x309D
+            || right_codepoint == 0x309E
+            || right_codepoint == 0x30FD
+            || right_codepoint == 0x30FE
+        {
+            return true;
+        }
+
+        // breaks before certain centered punctuation marks:
+        if right_codepoint == 0x30FB
+            || right_codepoint == 0xFF1A
+            || right_codepoint == 0xFF1B
+            || right_codepoint == 0xFF65
+            || right_codepoint == 0x203C
+            || (right_codepoint >= 0x2047 && right_codepoint <= 0x2049)
+        {
+            return ja_zh;
+        }
+    } else if right_prop == IN {
+        // breaks between inseparable characters such as U+2025, U+2026 i.e. characters with the Unicode Line Break property IN
         return true;
-    }
-    if ja_zh
-        && right_prop == PO
-        && UnicodeWidthChar::width_cjk(char::from_u32(right_codepoint).unwrap()).unwrap() == 2
-    {
-        return true;
-    }
-    if ja_zh
-        && left_prop == PR
-        && UnicodeWidthChar::width_cjk(char::from_u32(left_codepoint).unwrap()).unwrap() == 2
-    {
-        return true;
+    } else if right_prop == EX {
+        // breaks before certain centered punctuation marks:
+        if right_codepoint == 0xFF01 || right_codepoint == 0xFF1F {
+            return ja_zh;
+        }
     }
 
-    match right_codepoint {
-        0x2010 => true,  // BA - HYPHEN
-        0x2013 => true,  // BA - EN DASH
-        0x203C => ja_zh, // NS - DOUBLE EXCLAMATION MARK.
-        0x2047 => ja_zh, // NS - DOUBLE QUESTION MARK
-        0x2048 => ja_zh, // NS -
-        0x2049 => ja_zh, // NS -
-        0x3005 => true,  // NS -
-        0x301C => ja_zh, // NS -
-        0x303B => true,
-        0x309D => true,
-        0x309E => true,
-        0x30A0 => ja_zh,
-        0x30FB => ja_zh,
-        0x30FD => true,
-        0x30FE => true,
-        0xFF01 => ja_zh,
-        0xFF1A => ja_zh,
-        0xFF1B => ja_zh,
-        0xFF1F => ja_zh,
-        0xFF65 => ja_zh, // NS - HALFWIDTH KATAKANA MIDDLE DOT
-        _ => false,
+    // breaks before suffixes:
+    // Characters with the Unicode Line Break property PO and the East Asian Width property
+    if right_prop == PO
+        && UnicodeWidthChar::width_cjk(char::from_u32(right_codepoint).unwrap()).unwrap() == 2
+    {
+        return ja_zh;
     }
+    // breaks after prefixes:
+    // Characters with the Unicode Line Break property PR and the East Asian Width property
+    if left_prop == PR
+        && UnicodeWidthChar::width_cjk(char::from_u32(left_codepoint).unwrap()).unwrap() == 2
+    {
+        return ja_zh;
+    }
+    false
 }
 
 #[inline]
@@ -668,6 +682,11 @@ mod tests {
         assert_eq!(is_break(HL, NU), false);
         // LB 23a
         assert_eq!(is_break(PR, ID), false);
+        assert_eq!(is_break(PR, EB), false);
+        assert_eq!(is_break(PR, EM), false);
+        assert_eq!(is_break(ID, PO), false);
+        assert_eq!(is_break(EB, PO), false);
+        assert_eq!(is_break(EM, PO), false);
         // LB26
         assert_eq!(is_break(JL, JL), false);
         assert_eq!(is_break(JL, JV), false);

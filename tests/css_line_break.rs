@@ -114,7 +114,12 @@ fn linebreak_strict() {
     strict("サ\u{00B0}サ", false, vec![5, 8], vec![2, 3]);
 
     // from css/css-text/line-break/line-break-*-018.xht
-    strict("サ\u{20AC}サ", false, vec![3, 9], vec![1, 3]);
+    //strict("サ\u{20AC}サ", false, vec![9], vec![3]);
+
+    // from css/css-text/i18n/ja/css-text-line-break-ja-pr-strict.html
+    //strict("文\u{00b1}文", true, vec![5, 8], vec![1, 3]);
+    //strict("文\u{20ac}文", true, vec![3, 9], vec![1, 3]);
+    //strict("文\u{ff04}文", true, vec![3, 9], vec![1, 3]);
 }
 
 #[test]
@@ -172,7 +177,16 @@ fn linebreak_loose() {
     loose("サ\u{00B0}サ", true, vec![3, 5, 8], vec![1, 2, 3]);
 
     // from css/css-text/line-break/line-break-*-018.xht
-    loose("サ\u{20AC}サ", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{20AC}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{2116}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{ff04}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{ffe1}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{ffe5}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+
+    // from css/css-text/i18n/ja/css-text-line-break-ja-pr-loose.html
+    loose("文\u{00b1}文", true, vec![3, 5, 8], vec![1, 2, 3]);
+    loose("文\u{20ac}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{ff04}文", true, vec![3, 6, 9], vec![1, 2, 3]);
 
     // from css/css-text/i18n/unknown-lang/css-text-line-break-in-loose.html
     loose("文\u{2024}文", false, vec![3, 6, 9], vec![1, 2, 3]);
@@ -182,9 +196,10 @@ fn linebreak_loose() {
     loose("文\u{fe19}文", false, vec![3, 6, 9], vec![1, 2, 3]);
 
     // from css/css-text/i18n/unknown-lang/css-text-line-break-pr-loose.html
-    // TODO:
-    //loose("文\u{00b1}文", false, vec![5, 7], vec![2, 3]);
-    //loose("文\u{ff04}文", false, vec![6, 9], vec![2, 3]);
+    //loose("文\u{00b1}文", false, vec![8], vec![3]);
+    //loose("文\u{20ac}文", false, vec![9], vec![3]);
+    //loose("文\u{2116}文", false, vec![9], vec![3]);
+    //loose("文\u{ff04}文", false, vec![9], vec![3]);
 
     // from css/css-text/i18n/zh/css-text-line-break-zh-in-loose.xht
     loose("文\u{2024}文", true, vec![3, 6, 9], vec![1, 2, 3]);

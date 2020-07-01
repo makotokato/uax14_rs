@@ -3,7 +3,7 @@ use crate::line_breaker::LineBreakIteratorUTF16;
 use crate::line_breaker::LineBreakRule;
 use crate::line_breaker::WordBreakRule;
 
-/// Process line break using C-like FFI
+/// Process line break of C-like FFI version
 #[no_mangle]
 pub extern "C" fn line_breaker_utf16(
     source: *const u16,
@@ -38,7 +38,7 @@ pub extern "C" fn line_breaker_utf16(
         .for_each(|i| break_buffer[i] = 1);
 }
 
-/// Process line break using C-like FFI
+/// Process line break of C-like FFI version
 #[no_mangle]
 pub extern "C" fn line_breaker_latin1(
     source: *const u8,

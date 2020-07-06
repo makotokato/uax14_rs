@@ -80,16 +80,16 @@ fn is_break_utf32_by_loose(
     left_prop: u8,
     right_prop: u8,
     ja_zh: bool,
-) -> bool {
+) -> Option<bool> {
     // breaks before hyphens
     if right_prop == BA {
-        if right_codepoint == 0x2010 || right_codepoint == 0x2013 {
-            return true;
+        if left_prop == ID && (right_codepoint == 0x2010 || right_codepoint == 0x2013) {
+            return Some(true);
         }
     } else if right_prop == NS {
         // breaks before certain CJK hyphen-like characters
         if right_codepoint == 0x301C || right_codepoint == 0x30A0 {
-            return ja_zh;
+            return Some(ja_zh);
         }
 
         // breaks before iteration marks
@@ -100,7 +100,7 @@ fn is_break_utf32_by_loose(
             || right_codepoint == 0x30FD
             || right_codepoint == 0x30FE
         {
-            return true;
+            return Some(true);
         }
 
         // breaks before certain centered punctuation marks:
@@ -111,15 +111,15 @@ fn is_break_utf32_by_loose(
             || right_codepoint == 0x203C
             || (right_codepoint >= 0x2047 && right_codepoint <= 0x2049)
         {
-            return ja_zh;
+            return Some(ja_zh);
         }
     } else if right_prop == IN {
         // breaks between inseparable characters such as U+2025, U+2026 i.e. characters with the Unicode Line Break property IN
-        return true;
+        return Some(true);
     } else if right_prop == EX {
         // breaks before certain centered punctuation marks:
         if right_codepoint == 0xFF01 || right_codepoint == 0xFF1F {
-            return ja_zh;
+            return Some(ja_zh);
         }
     }
 
@@ -128,16 +128,16 @@ fn is_break_utf32_by_loose(
     if right_prop == PO
         && UnicodeWidthChar::width_cjk(char::from_u32(right_codepoint).unwrap()).unwrap() == 2
     {
-        return ja_zh;
+        return Some(ja_zh);
     }
     // breaks after prefixes:
     // Characters with the Unicode Line Break property PR and the East Asian Width property
     if left_prop == PR
         && UnicodeWidthChar::width_cjk(char::from_u32(left_codepoint).unwrap()).unwrap() == 2
     {
-        return ja_zh;
+        return Some(ja_zh);
     }
-    false
+    None
 }
 
 #[inline]
@@ -188,12 +188,14 @@ macro_rules! break_iterator_impl {
                     let mut current_prop = self.get_linebreak_property();
                     // Handle LB25
                     // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
-                    if current_prop == PR
-                        || current_prop == PO
-                        || current_prop == OP_OP30
-                        || current_prop == OP_EA
-                        || current_prop == HY
-                        || current_prop == NU
+                    if self.word_break_rule != WordBreakRule::BreakAll
+                        && self.word_break_rule != WordBreakRule::KeepAll
+                        && (current_prop == PR
+                            || current_prop == PO
+                            || current_prop == OP_OP30
+                            || current_prop == OP_EA
+                            || current_prop == HY
+                            || current_prop == NU)
                     {
                         let backup = self.iter.clone();
                         let mut current = self.current;
@@ -209,7 +211,7 @@ macro_rules! break_iterator_impl {
 
                                 // If left is PR, it might apply loose rule.
                                 if self.break_rule == LineBreakRule::Loose {
-                                    if is_break_utf32_by_loose(
+                                    if let Some(_breakable) = is_break_utf32_by_loose(
                                         left.unwrap().1 as u32,
                                         current.unwrap().1 as u32,
                                         left_prop,
@@ -306,6 +308,9 @@ macro_rules! break_iterator_impl {
 
                     // CSS word-break property handling
                     if self.word_break_rule == WordBreakRule::BreakAll {
+                        if current_prop == GL || right_prop == GL {
+                            return Some(self.current.unwrap().0);
+                        }
                         current_prop = match current_prop {
                             AL => ID,
                             NU => ID,
@@ -324,14 +329,17 @@ macro_rules! break_iterator_impl {
                             return Some(self.current.unwrap().0);
                         }
                     } else if self.break_rule == LineBreakRule::Loose {
-                        if is_break_utf32_by_loose(
+                        if let Some(_breakable) = is_break_utf32_by_loose(
                             left_codepoint.unwrap().1 as u32,
                             self.current.unwrap().1 as u32,
                             current_prop,
                             right_prop,
                             self.ja_zh,
                         ) {
-                            return Some(self.current.unwrap().0);
+                            if _breakable {
+                                return Some(self.current.unwrap().0);
+                            }
+                            continue;
                         }
                     } else if self.break_rule == LineBreakRule::Anywhere {
                         return Some(self.current.unwrap().0);
@@ -672,6 +680,8 @@ mod tests {
         assert_eq!(is_break(BB, AL), false);
         // LB21
         assert_eq!(is_break(AL, BA), false);
+        assert_eq!(is_break(ID, BA), false);
+        assert_eq!(is_break(ID, NS), false);
         // LB21a
         // LB21b
         assert_eq!(is_break(SY, HL), false);

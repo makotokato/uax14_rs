@@ -168,7 +168,12 @@ fn linebreak_loose() {
     loose("サ\u{3005}サ", true, vec![3, 6, 9], vec![1, 2, 3]);
 
     // from css/css-text/line-break/line-break-*-015.xht
-    loose("サ\u{2025}\u{2025}サ", true, vec![3, 6, 9, 12], vec![1, 2, 3, 4]);
+    loose(
+        "サ\u{2025}\u{2025}サ",
+        true,
+        vec![3, 6, 9, 12],
+        vec![1, 2, 3, 4],
+    );
 
     // from css/css-text/line-break/line-break-*-016a.xht
     loose("サ\u{30FB}サ", true, vec![3, 6, 9], vec![1, 2, 3]);
@@ -207,6 +212,14 @@ fn linebreak_loose() {
     loose("文\u{2026}文", true, vec![3, 6, 9], vec![1, 2, 3]);
     loose("文\u{22ef}文", true, vec![3, 6, 9], vec![1, 2, 3]);
     loose("文\u{fe19}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+
+    // css/css-text/line-break/line-break-loose-hyphens-001.html
+    loose("文\u{2010}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+    loose("文\u{2013}文", true, vec![3, 6, 9], vec![1, 2, 3]);
+
+    // css/css-text/line-break/line-break-loose-hyphens-003.html
+    loose("aa\u{2010}", false, vec![5], vec![3]);
+    loose("aa\u{2013}", false, vec![5], vec![3]);
 }
 
 #[test]

@@ -85,8 +85,12 @@ fn wordbreak_breakall() {
     let s = "\u{1f496}\u{1f494}";
     break_all(s, vec![4, 8], vec![2, 4]);
 
+    // from css/css-text/word-break/word-break-break-all-022.html
+    let s = "XX\u{00a0}X";
+    break_all(s, vec![1, 2, 4, 5], vec![1, 2, 3, 4]);
+
     // from css/css-text/word-break/word-break-break-all-023.html
-    let s = "XX XX\\\\\\";
+    let s = "XX XX\u{005C}\u{005C}\u{005C}";
     break_all(s, vec![1, 3, 4, 5, 6, 7, 8], vec![1, 3, 4, 5, 6, 7, 8]);
 
     // from css/css-text/word-break/word-break-break-all-026.html

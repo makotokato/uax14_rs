@@ -127,4 +127,8 @@ fn wordbreak_keepall() {
     // from css/css-text/word-break/word-break-keep-all-006.html
     let s = "字\u{3001}字";
     keep_all(s, vec![6, 9], vec![2, 3]);
+
+    // from css/css-text/word-boundary/word-boundary-107.html
+    let s = "しょう。";
+    keep_all(s, vec![12], vec![4]);
 }

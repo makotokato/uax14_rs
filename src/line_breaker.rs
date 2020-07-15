@@ -151,14 +151,22 @@ fn is_break(left: u8, right: u8) -> bool {
 
 #[inline]
 fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
-    (left == AI || left == AL || left == ID || left == NU || left == HY || left == H2 || left == H3)
+    (left == AI
+        || left == AL
+        || left == ID
+        || left == NU
+        || left == HY
+        || left == H2
+        || left == H3
+        || left == CJ)
         && (right == AI
             || right == AL
             || right == ID
             || right == NU
             || right == HY
             || right == H2
-            || right == H3)
+            || right == H3
+            || right == CJ)
 }
 
 #[inline]

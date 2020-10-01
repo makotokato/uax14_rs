@@ -364,7 +364,9 @@ macro_rules! break_iterator_impl {
                     }
 
                     #[cfg(target_os = "macos")]
-                    if use_complex_breaking(left_codepoint.unwrap().1 as u32)
+                    if current_prop == SA
+                        && right_prop == SA
+                        && use_complex_breaking(left_codepoint.unwrap().1 as u32)
                         && use_complex_breaking(self.current.unwrap().1 as u32)
                     {
                         let start_iter = self.iter.clone();

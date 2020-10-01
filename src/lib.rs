@@ -2,6 +2,12 @@ mod ffi;
 mod line_breaker;
 mod properties;
 
+// platform specific breaker
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(not(target_os = "macos"))]
+mod generic;
+
 pub use crate::line_breaker::*;
 
 #[cfg(test)]

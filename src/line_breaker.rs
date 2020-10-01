@@ -1,6 +1,12 @@
 extern crate unicode_width;
 
+#[cfg(target_os = "macos")]
+use crate::macos::*;
+#[cfg(not(target_os = "macos"))]
+use crate::generic::*;
+
 use crate::properties::*;
+
 use core::char;
 use core::str::CharIndices;
 use unicode_width::UnicodeWidthChar;
@@ -172,6 +178,10 @@ fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
 #[inline]
 fn get_break_state(left: u8, right: u8) -> i8 {
     UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
+}
+
+fn use_complex_breaking(codepoint: u32) -> bool {
+    (codepoint >= 0xe00 && codepoint <= 0xe3a) || (codepoint >= 0xe40 && codepoint <= 0xe4e)
 }
 
 macro_rules! break_iterator_impl {
@@ -351,6 +361,40 @@ macro_rules! break_iterator_impl {
                         }
                     } else if self.break_rule == LineBreakRule::Anywhere {
                         return Some(self.current.unwrap().0);
+                    }
+
+                    #[cfg(target_os = "macos")]
+                    if use_complex_breaking(left_codepoint.unwrap().1 as u32)
+                        && use_complex_breaking(self.current.unwrap().1 as u32)
+                    {
+                        let start_iter = self.iter.clone();
+                        let start_point = self.current;
+                        let mut s = Vec::new();
+                        s.push(left_codepoint.unwrap().1 as u16);
+                        s.push(self.current.unwrap().1 as u16);
+                        loop {
+                            self.current = self.iter.next();
+                            if self.current.is_none() {
+                                break;
+                            }
+                            if !use_complex_breaking(self.current.unwrap().1 as u32) {
+                                break;
+                            }
+                            s.push(self.current.unwrap().1 as u16);
+                        }
+                        // Restore iterator to move to head of complex string
+                        self.iter = start_iter;
+                        self.current = start_point;
+                        if let Some(first) = get_next_break_utf16(s.as_ptr(), s.len()) {
+                            let mut i = 1;
+                            loop {
+                                if i == first {
+                                    return Some(self.current.unwrap().0);
+                                }
+                                self.current = self.iter.next();
+                                i += 1;
+                            }
+                        }
                     }
 
                     // If break_state is equals or grater than 0, it is alias of property.

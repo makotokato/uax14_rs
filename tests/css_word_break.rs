@@ -47,6 +47,27 @@ fn keep_all(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
     assert_eq!(expect_utf16, result, "{}", s);
 }
 
+fn normal(s: &str, expect_utf8: Vec<usize>, expect_utf16: Vec<usize>) {
+    let iter = LineBreakIterator::new_with_break_rule(
+        s,
+        LineBreakRule::Strict,
+        WordBreakRule::Normal,
+        false,
+    );
+    let result: Vec<usize> = iter.map(|x| x).collect();
+    assert_eq!(expect_utf8, result, "{}", s);
+
+    let s_utf16: Vec<u16> = s.encode_utf16().map(|x| x).collect();
+    let iter = LineBreakIteratorUTF16::new_with_break_rule(
+        &s_utf16,
+        LineBreakRule::Strict,
+        WordBreakRule::Normal,
+        false,
+    );
+    let result: Vec<usize> = iter.map(|x| x).collect();
+    assert_eq!(expect_utf16, result, "{}", s);
+}
+
 #[test]
 fn wordbreak_breakall() {
     // from css/css-text/word-break/word-break-break-all-000.html
@@ -131,4 +152,12 @@ fn wordbreak_keepall() {
     // from css/css-text/word-boundary/word-boundary-107.html
     let s = "しょう。";
     keep_all(s, vec![12], vec![4]);
+}
+
+#[test]
+fn wordbreak_normal() {
+    // from css/css-text/word-break/word-break-normal-th-000.html
+    let s = "\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}";
+    #[cfg(target_os = "macos")]
+    normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
 }

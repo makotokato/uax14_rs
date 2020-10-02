@@ -158,6 +158,6 @@ fn wordbreak_keepall() {
 fn wordbreak_normal() {
     // from css/css-text/word-break/word-break-normal-th-000.html
     let s = "\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}";
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "windows"))]
     normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
 }

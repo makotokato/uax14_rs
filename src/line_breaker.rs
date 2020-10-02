@@ -2,7 +2,9 @@ extern crate unicode_width;
 
 #[cfg(target_os = "macos")]
 use crate::macos::*;
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "windows")]
+use crate::windows::*;
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
 use crate::generic::*;
 
 use crate::properties::*;

@@ -20,16 +20,17 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
             (length + 1) as i32,
         );
 
-        let attrs = std::slice::from_raw_parts(attr_buffer.as_ptr(), length);
+        // TODO: PangoLogAttr define in pango-sys is incorrect.
+        let attrs = std::slice::from_raw_parts(attr_buffer.as_ptr() as *const u32, length);
         let mut i = 0;
         loop {
             if i >= length {
                 return None;
             }
-            i += 1;
-            if (attrs[i - 1].is_line_break & 1) == 1 && i < length {
+            if (attrs[i] & 1) == 1 {
                 return Some(i);
             }
+            i += 1;
         }
     }
 }
@@ -42,6 +43,6 @@ mod tests {
     fn pango_line_break() {
         let text: [u16; 5] = [0x42, 0x42, 0x42, 0x20, 0x42];
         let first_break = get_next_break_utf16(text.as_ptr(), text.len());
-        assert_eq!(first_break.unwrap(), 3, "space");
+        assert_eq!(first_break.unwrap(), 4, "space");
     }
 }

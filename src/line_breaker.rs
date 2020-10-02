@@ -244,9 +244,6 @@ macro_rules! break_iterator_impl {
                     // CSS word-break property handling
                     match self.word_break_rule {
                         WordBreakRule::BreakAll => {
-                            if current_prop == GL || right_prop == GL {
-                                return Some(self.current.unwrap().0);
-                            }
                             current_prop = match current_prop {
                                 AL => ID,
                                 NU => ID,

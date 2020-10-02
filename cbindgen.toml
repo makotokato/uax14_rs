@@ -22,5 +22,5 @@ tab_width = 2
 
 [export]
 include = []
-exclude = []
+exclude = ["pango_language_from_string", "pango_get_log_attrs", "CFStringCreateWithCharactersNoCopy", "CFStringTokenizerAdvanceToNextToken", "CFStringTokenizerCreate", "CFStringTokenizerGetCurrentTokenRange"]
 item_types = ["functions"]

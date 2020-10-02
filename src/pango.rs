@@ -1,6 +1,37 @@
-use pango_sys::*;
 use std::char::decode_utf16;
-use std::os::raw::c_char;
+use std::os::raw::{c_char, c_int, c_uint, c_void};
+
+// TODO:
+// PangoLogAttr define in pango-sys is incorrect, so we don't use pango-sys.
+
+#[repr(C)]
+pub struct PangoLanguage(c_void);
+
+#[repr(C)]
+pub struct PangoLogAttr {
+    // all members are bit field.
+    mask: c_uint,
+}
+
+impl PangoLogAttr {
+    pub fn is_line_break(&self) -> bool {
+        (self.mask & 1) != 0
+    }
+}
+
+#[link(name = "pango-1.0")]
+extern "C" {
+    pub fn pango_language_from_string(language: *const c_char) -> *mut PangoLanguage;
+
+    pub fn pango_get_log_attrs(
+        text: *const c_char,
+        length: c_int,
+        level: c_int,
+        language: *mut PangoLanguage,
+        log_attrs: *mut PangoLogAttr,
+        attrs_len: c_int,
+    );
+}
 
 pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
     unsafe {
@@ -20,14 +51,13 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
             (length + 1) as i32,
         );
 
-        // TODO: PangoLogAttr define in pango-sys is incorrect.
-        let attrs = std::slice::from_raw_parts(attr_buffer.as_ptr() as *const u32, length);
+        let attrs = std::slice::from_raw_parts(attr_buffer.as_ptr(), length);
         let mut i = 0;
         loop {
             if i >= length {
                 return None;
             }
-            if (attrs[i] & 1) == 1 {
+            if attrs[i].is_line_break() {
                 return Some(i);
             }
             i += 1;

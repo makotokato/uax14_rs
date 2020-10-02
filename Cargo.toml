@@ -19,8 +19,5 @@ features = ["usp10"]
 [target."cfg(target_os = \"macos\")".dependencies.core-foundation]
 version = "0.9"
 
-[target."cfg(target_os = \"linux\")".dependencies.pango-sys]
-version = "0.10.0"
-
 [profile.release]
 lto = true

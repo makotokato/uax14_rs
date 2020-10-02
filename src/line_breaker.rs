@@ -215,102 +215,14 @@ macro_rules! break_iterator_impl {
                             || current_prop == HY
                             || current_prop == NU)
                     {
-                        let backup = self.iter.clone();
-                        let mut current = self.current;
-                        let mut state = current_prop;
-
-                        if state == PR || state == PO {
-                            let left = current;
-                            let left_prop = current_prop;
-
-                            current = self.iter.next();
-                            if current.is_some() {
-                                state = self.get_linebreak_property_with_rule(current.unwrap().1);
-
-                                // If left is PR, it might apply loose rule.
-                                if self.break_rule == LineBreakRule::Loose {
-                                    if let Some(_breakable) = is_break_utf32_by_loose(
-                                        left.unwrap().1 as u32,
-                                        current.unwrap().1 as u32,
-                                        left_prop,
-                                        state,
-                                        self.ja_zh,
-                                    ) {
-                                        // reset state since this cannot apply LB25.
-                                        state = 0;
-                                    }
-                                }
-                            }
-                            // If reaching EOF, restore iterator
-                        }
-                        if state == OP_OP30 || state == HY || state == OP_EA {
-                            current = self.iter.next();
-                            if current.is_some() {
-                                state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                            }
-                            // If reaching EOF, restore iterator
+                        let r = self.handle_lb25();
+                        if r.is_some() && r.unwrap() > 0 {
+                            // Most is EOF. if r == 0, this isn't LB25 rule.
+                            return r;
                         }
 
-                        if current.is_none() || state != NU {
-                            // Not match for LB25 due to EOF. Restore before parsing.
-                            self.iter = backup;
-                        } else {
-                            let mut backup = self.iter.clone();
-                            let mut prev_prop = state;
-                            let mut prev = current;
-
-                            current = self.iter.next();
-                            if current.is_none() {
-                                // EOF
-                                self.current = None;
-                                return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
-                            }
-
-                            state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                            loop {
-                                if state == NU || state == SY || state == IS {
-                                    backup = self.iter.clone();
-                                    prev_prop = state;
-                                    prev = current;
-
-                                    current = self.iter.next();
-                                    if current.is_none() {
-                                        // EOF
-                                        self.current = None;
-                                        return Some(
-                                            prev.unwrap().0 + $name::char_len(prev.unwrap().1),
-                                        );
-                                    }
-                                    state =
-                                        self.get_linebreak_property_with_rule(current.unwrap().1);
-                                    continue;
-                                }
-                                break;
-                            }
-                            if state == CL || state == CP {
-                                backup = self.iter.clone();
-                                prev_prop = state;
-                                prev = current;
-
-                                current = self.iter.next();
-                                if current.is_none() {
-                                    // EOF
-                                    self.current = None;
-                                    return Some(
-                                        prev.unwrap().0 + $name::char_len(prev.unwrap().1),
-                                    );
-                                }
-                                state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                            }
-                            if state == PR || state == PO {
-                                self.current = current;
-                            } else {
-                                // Restore iterator that is NU/CL/CP position.
-                                self.iter = backup;
-                                self.current = prev;
-                                current_prop = prev_prop;
-                            }
-                        }
+                        // current_prop may be invalid, get it now.
+                        current_prop = self.get_linebreak_property();
                     }
 
                     let next = self.iter.next();
@@ -439,6 +351,104 @@ macro_rules! break_iterator_impl {
                     }
                 }
                 return false;
+            }
+
+            fn handle_lb25(&mut self) -> Option<usize> {
+                // Handle LB25
+                // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
+                let mut old_iter = self.iter.clone();
+                let mut current = self.current;
+                let mut state = self.get_linebreak_property();;
+
+                if state == PR || state == PO {
+                    let left = current;
+                    let left_prop = state;
+
+                    current = self.iter.next();
+                    if current.is_some() {
+                        state = self.get_linebreak_property_with_rule(current.unwrap().1);
+
+                        // If left is PR, it might apply loose rule.
+                        if self.break_rule == LineBreakRule::Loose {
+                            if let Some(_breakable) = is_break_utf32_by_loose(
+                                left.unwrap().1 as u32,
+                                current.unwrap().1 as u32,
+                                left_prop,
+                                state,
+                                self.ja_zh,
+                            ) {
+                                // reset state since this cannot apply LB25.
+                                state = 0;
+                            }
+                        }
+                    }
+                    // If reaching EOF, restore iterator
+                }
+
+                if state == OP_OP30 || state == HY || state == OP_EA {
+                    current = self.iter.next();
+                    if current.is_some() {
+                        state = self.get_linebreak_property_with_rule(current.unwrap().1);
+                    }
+                    // If reaching EOF, restore iterator
+                }
+
+                if current.is_none() || state != NU {
+                    // Not match for LB25 due to EOF. Restore before parsing.
+                    self.iter = old_iter;
+                    return Some(0);
+                }
+
+                // This should apply LB25 rule.
+
+                old_iter = self.iter.clone();
+                let mut prev = current;
+
+                current = self.iter.next();
+                if current.is_none() {
+                    // EOF
+                    self.current = None;
+                    return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
+                }
+
+                state = self.get_linebreak_property_with_rule(current.unwrap().1);
+                loop {
+                    if state != NU && state != SY && state != IS {
+                        break;
+                    }
+                    old_iter = self.iter.clone();
+                    prev = current;
+                    current = self.iter.next();
+                    if current.is_none() {
+                        // EOF
+                        self.current = None;
+                        return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
+                    }
+                    state = self.get_linebreak_property_with_rule(current.unwrap().1);
+                }
+
+                if state == CL || state == CP {
+                    old_iter = self.iter.clone();
+                    prev = current;
+
+                    current = self.iter.next();
+                    if current.is_none() {
+                        // EOF
+                        self.current = None;
+                        return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
+                    }
+                    state = self.get_linebreak_property_with_rule(current.unwrap().1);
+                }
+
+                if state == PR || state == PO {
+                    self.current = current;
+                    // Continue LB25 rule
+                    return self.handle_lb25();
+                }
+                // Restore iterator that is NU/CL/CP position.
+                self.iter = old_iter;
+                self.current = prev;
+                return None;
             }
         }
     };

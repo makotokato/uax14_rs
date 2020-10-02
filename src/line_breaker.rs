@@ -1,13 +1,13 @@
 extern crate unicode_width;
 
-#[cfg(target_os = "macos")]
-use crate::macos::*;
-#[cfg(target_os = "windows")]
-use crate::windows::*;
-#[cfg(target_os = "linux")]
-use crate::pango::*;
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 use crate::generic::*;
+#[cfg(target_os = "macos")]
+use crate::macos::*;
+#[cfg(target_os = "linux")]
+use crate::pango::*;
+#[cfg(target_os = "windows")]
+use crate::windows::*;
 
 use crate::properties::*;
 
@@ -185,7 +185,8 @@ fn get_break_state(left: u8, right: u8) -> i8 {
 }
 
 fn use_complex_breaking(codepoint: u32) -> bool {
-    (codepoint >= 0xe00 && codepoint <= 0xe3a) || (codepoint >= 0xe40 && codepoint <= 0xe4e)
+    // Thai, Lao and Khmer
+    (codepoint >= 0xe00 && codepoint <= 0xeff) || (codepoint >= 0x1780 && codepoint <= 0x17ff)
 }
 
 macro_rules! break_iterator_impl {
@@ -241,43 +242,52 @@ macro_rules! break_iterator_impl {
                     let right_prop = self.get_linebreak_property();
 
                     // CSS word-break property handling
-                    if self.word_break_rule == WordBreakRule::BreakAll {
-                        if current_prop == GL || right_prop == GL {
-                            return Some(self.current.unwrap().0);
+                    match self.word_break_rule {
+                        WordBreakRule::BreakAll => {
+                            if current_prop == GL || right_prop == GL {
+                                return Some(self.current.unwrap().0);
+                            }
+                            current_prop = match current_prop {
+                                AL => ID,
+                                NU => ID,
+                                SA => ID,
+                                _ => current_prop,
+                            };
                         }
-                        current_prop = match current_prop {
-                            AL => ID,
-                            NU => ID,
-                            SA => ID,
-                            _ => current_prop,
-                        };
-                    } else if self.word_break_rule == WordBreakRule::KeepAll {
-                        if is_non_break_by_keepall(current_prop, right_prop) {
-                            continue;
+                        WordBreakRule::KeepAll => {
+                            if is_non_break_by_keepall(current_prop, right_prop) {
+                                continue;
+                            }
                         }
+                        _ => (),
                     }
 
                     // CSS line-break property handling
-                    if self.break_rule == LineBreakRule::Normal {
-                        if self.is_break_by_normal() {
-                            return Some(self.current.unwrap().0);
-                        }
-                    } else if self.break_rule == LineBreakRule::Loose {
-                        if let Some(_breakable) = is_break_utf32_by_loose(
-                            left_codepoint.unwrap().1 as u32,
-                            self.current.unwrap().1 as u32,
-                            current_prop,
-                            right_prop,
-                            self.ja_zh,
-                        ) {
-                            if _breakable {
+                    match self.break_rule {
+                        LineBreakRule::Normal => {
+                            if self.is_break_by_normal() {
                                 return Some(self.current.unwrap().0);
                             }
-                            continue;
                         }
-                    } else if self.break_rule == LineBreakRule::Anywhere {
-                        return Some(self.current.unwrap().0);
-                    }
+                        LineBreakRule::Loose => {
+                            if let Some(breakable) = is_break_utf32_by_loose(
+                                left_codepoint.unwrap().1 as u32,
+                                self.current.unwrap().1 as u32,
+                                current_prop,
+                                right_prop,
+                                self.ja_zh,
+                            ) {
+                                if breakable {
+                                    return Some(self.current.unwrap().0);
+                                }
+                                continue;
+                            }
+                        }
+                        LineBreakRule::Anywhere => {
+                            return Some(self.current.unwrap().0);
+                        }
+                        _ => (),
+                    };
 
                     if current_prop == SA
                         && right_prop == SA

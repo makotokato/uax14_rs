@@ -275,7 +275,6 @@ macro_rules! break_iterator_impl {
                         return Some(self.current.unwrap().0);
                     }
 
-                    #[cfg(target_os = "macos")]
                     if current_prop == SA
                         && right_prop == SA
                         && use_complex_breaking(left_codepoint.unwrap().1 as u32)

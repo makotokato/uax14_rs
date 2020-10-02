@@ -7,7 +7,9 @@ mod properties;
 mod macos;
 #[cfg(target_os = "windows")]
 mod windows;
-#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+#[cfg(target_os = "linux")]
+mod pango;
+#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 mod generic;
 
 pub use crate::line_breaker::*;

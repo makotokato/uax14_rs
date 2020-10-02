@@ -359,7 +359,7 @@ macro_rules! break_iterator_impl {
                 // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
                 let mut old_iter = self.iter.clone();
                 let mut current = self.current;
-                let mut state = self.get_linebreak_property();;
+                let mut state = self.get_linebreak_property();
 
                 if state == PR || state == PO {
                     let left = current;

@@ -188,6 +188,12 @@ fn get_break_state(left: u8, right: u8) -> i8 {
     UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
 }
 
+#[cfg(not(target_os = "macos"))]
+fn use_complex_breaking(codepoint: u32) -> bool {
+    // Thai
+    codepoint >= 0xe00 && codepoint <= 0xe7f
+}
+#[cfg(target_os = "macos")]
 fn use_complex_breaking(codepoint: u32) -> bool {
     // Thai, Lao and Khmer
     (codepoint >= 0xe00 && codepoint <= 0xeff) || (codepoint >= 0x1780 && codepoint <= 0x17ff)
@@ -309,9 +315,7 @@ macro_rules! break_iterator_impl {
                         _ => (),
                     };
 
-                    if current_prop == SA
-                        && right_prop == SA
-                        && use_complex_breaking(left_codepoint.unwrap().1 as u32)
+                    if use_complex_breaking(left_codepoint.unwrap().1 as u32)
                         && use_complex_breaking(self.current.unwrap().1 as u32)
                     {
                         let start_iter = self.iter.clone();

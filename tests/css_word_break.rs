@@ -164,4 +164,14 @@ fn wordbreak_normal() {
     let s = "\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}";
     #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
+
+    // from css/css-text/word-break/word-break-normal-km-000.html
+    //let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
+    //#[cfg(target_os = "macos")]
+    //normal(_s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
+
+    // from css/css-text/word-break/word-break-normal-lo-000.html
+    //let _s = "ພາສາລາວພາສາລາວພາສາລາວ";
+    //#[cfg(target_os = "macos")]
+    //normal(_s, vec![63], vec![4, 7, 11, 14]);
 }

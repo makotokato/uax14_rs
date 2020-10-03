@@ -156,6 +156,10 @@ fn is_break(left: u8, right: u8) -> bool {
     if rule == KEEP_RULE {
         return false;
     }
+    if rule >= 0 {
+        // need additional next characters to get break rule.
+        return false;
+    }
     true
 }
 
@@ -725,6 +729,13 @@ mod tests {
         // LB8
         // LB8a
         assert_eq!(is_break(ZWJ, AL), false);
+        // LB9
+        assert_eq!(is_break(AL, ZWJ), false);
+        assert_eq!(is_break(AL, CM), false);
+        assert_eq!(is_break(ID, ZWJ), false);
+        // LB10
+        assert_eq!(is_break(ZWJ, SP), false);
+        assert_eq!(is_break(SP, CM), true);
         // LB11
         assert_eq!(is_break(AL, WJ), false);
         assert_eq!(is_break(WJ, AL), false);

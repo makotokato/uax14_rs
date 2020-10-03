@@ -177,8 +177,10 @@ for i in prop_type:
         # LB10
         if i == "CM":
             i = "AL"
-        if i == "ZWJ":
-            i = "AL"
+        if j == "CM":
+            j = "AL"
+        if j == "ZWJ":
+            j = "AL"
 
         # LB11
         if i == "WJ":

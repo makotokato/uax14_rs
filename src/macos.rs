@@ -72,7 +72,7 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
 
 pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
     if let Some(b) = get_next_break_utf16(text, length) {
-        let breaks = Vec::new();
+        let mut breaks = Vec::new();
         breaks.push(b);
         return Some(breaks);
     }

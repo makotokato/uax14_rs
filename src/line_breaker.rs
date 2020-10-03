@@ -189,12 +189,14 @@ fn get_break_state(left: u8, right: u8) -> i8 {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn use_complex_breaking(codepoint: u32) -> bool {
+#[inline]
+fn use_complex_breaking_utf32(codepoint: u32) -> bool {
     // Thai
     codepoint >= 0xe00 && codepoint <= 0xe7f
 }
 #[cfg(target_os = "macos")]
-fn use_complex_breaking(codepoint: u32) -> bool {
+#[inline]
+fn use_complex_breaking_utf32(codepoint: u32) -> bool {
     // Thai, Lao and Khmer
     (codepoint >= 0xe00 && codepoint <= 0xeff) || (codepoint >= 0x1780 && codepoint <= 0x17ff)
 }
@@ -219,6 +221,7 @@ macro_rules! break_iterator_impl {
                 }
 
                 if !self.result_queue.is_empty() {
+                    // We have break point cache by previous run.
                     let mut i = 0;
                     loop {
                         if i == *self.result_queue.first().unwrap() {
@@ -237,17 +240,17 @@ macro_rules! break_iterator_impl {
                 }
 
                 loop {
-                    let mut current_prop = self.get_linebreak_property();
+                    let mut left_prop = self.get_linebreak_property();
                     // Handle LB25
                     // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
                     if self.word_break_rule != WordBreakRule::BreakAll
                         && self.word_break_rule != WordBreakRule::KeepAll
-                        && (current_prop == PR
-                            || current_prop == PO
-                            || current_prop == OP_OP30
-                            || current_prop == OP_EA
-                            || current_prop == HY
-                            || current_prop == NU)
+                        && (left_prop == PR
+                            || left_prop == PO
+                            || left_prop == OP_OP30
+                            || left_prop == OP_EA
+                            || left_prop == HY
+                            || left_prop == NU)
                     {
                         let r = self.handle_lb25();
                         if r.is_some() && r.unwrap() > 0 {
@@ -255,8 +258,8 @@ macro_rules! break_iterator_impl {
                             return r;
                         }
 
-                        // current_prop may be invalid, get it now.
-                        current_prop = self.get_linebreak_property();
+                        // left_prop may be invalid, get it now.
+                        left_prop = self.get_linebreak_property();
                     }
 
                     let next = self.iter.next();
@@ -273,15 +276,15 @@ macro_rules! break_iterator_impl {
                     // CSS word-break property handling
                     match self.word_break_rule {
                         WordBreakRule::BreakAll => {
-                            current_prop = match current_prop {
+                            left_prop = match left_prop {
                                 AL => ID,
                                 NU => ID,
                                 SA => ID,
-                                _ => current_prop,
+                                _ => left_prop,
                             };
                         }
                         WordBreakRule::KeepAll => {
-                            if is_non_break_by_keepall(current_prop, right_prop) {
+                            if is_non_break_by_keepall(left_prop, right_prop) {
                                 continue;
                             }
                         }
@@ -299,7 +302,7 @@ macro_rules! break_iterator_impl {
                             if let Some(breakable) = is_break_utf32_by_loose(
                                 left_codepoint.unwrap().1 as u32,
                                 self.current.unwrap().1 as u32,
-                                current_prop,
+                                left_prop,
                                 right_prop,
                                 self.ja_zh,
                             ) {
@@ -315,45 +318,18 @@ macro_rules! break_iterator_impl {
                         _ => (),
                     };
 
-                    if use_complex_breaking(left_codepoint.unwrap().1 as u32)
-                        && use_complex_breaking(self.current.unwrap().1 as u32)
+                    // UAX14 doesn't have Thai etc, so use another way.
+                    if $name::use_complex_breaking(left_codepoint.unwrap().1)
+                        && $name::use_complex_breaking(self.current.unwrap().1)
                     {
-                        let start_iter = self.iter.clone();
-                        let start_point = self.current;
-                        let mut s = Vec::new();
-                        s.push(left_codepoint.unwrap().1 as u16);
-                        s.push(self.current.unwrap().1 as u16);
-                        loop {
-                            self.current = self.iter.next();
-                            if self.current.is_none() {
-                                break;
-                            }
-                            if !use_complex_breaking(self.current.unwrap().1 as u32) {
-                                break;
-                            }
-                            s.push(self.current.unwrap().1 as u16);
-                        }
-                        // Restore iterator to move to head of complex string
-                        self.iter = start_iter;
-                        self.current = start_point;
-                        if let Some(breaks) = get_line_break_utf16(s.as_ptr(), s.len()) {
-                            let mut i = 1;
-                            self.result_queue = breaks;
-                            loop {
-                                if i == *self.result_queue.first().unwrap() {
-                                    self.result_queue.remove(0);
-                                    self.result_queue =
-                                        self.result_queue.iter().map(|r| r - i).collect();
-                                    return Some(self.current.unwrap().0);
-                                }
-                                self.current = self.iter.next();
-                                i += 1;
-                            }
+                        let result = self.handle_complex_language(left_codepoint.unwrap().1);
+                        if result.is_some() {
+                            return result;
                         }
                     }
 
                     // If break_state is equals or grater than 0, it is alias of property.
-                    let mut break_state = get_break_state(current_prop, right_prop);
+                    let mut break_state = get_break_state(left_prop, right_prop);
                     if break_state >= 0 as i8 {
                         loop {
                             let prev = self.current.unwrap();
@@ -375,7 +351,7 @@ macro_rules! break_iterator_impl {
                         return Some(self.current.unwrap().0);
                     }
 
-                    if is_break(current_prop, right_prop) {
+                    if is_break(left_prop, right_prop) {
                         return Some(self.current.unwrap().0);
                     }
                 }
@@ -491,6 +467,42 @@ macro_rules! break_iterator_impl {
                 self.current = prev;
                 return None;
             }
+
+            // UAX14 doesn't define line break rules for some languages such as Thai.
+            // These languages uses dictionary-based breaker, so we use OS's line breaker instead.
+            fn handle_complex_language(&mut self, left_codepoint: $char_type) -> Option<usize> {
+                let start_iter = self.iter.clone();
+                let start_point = self.current;
+                let mut s = Vec::new();
+                s.push(left_codepoint as u16);
+                loop {
+                    s.push(self.current.unwrap().1 as u16);
+                    self.current = self.iter.next();
+                    if self.current.is_none() {
+                        break;
+                    }
+                    if !$name::use_complex_breaking(self.current.unwrap().1) {
+                        break;
+                    }
+                }
+                // Restore iterator to move to head of complex string
+                self.iter = start_iter;
+                self.current = start_point;
+                if let Some(breaks) = get_line_break_utf16(s.as_ptr(), s.len()) {
+                    let mut i = 1;
+                    self.result_queue = breaks;
+                    loop {
+                        if i == *self.result_queue.first().unwrap() {
+                            self.result_queue.remove(0);
+                            self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
+                            return Some(self.current.unwrap().0);
+                        }
+                        self.current = self.iter.next();
+                        i += 1;
+                    }
+                }
+                None
+            }
         }
     };
 }
@@ -525,6 +537,7 @@ impl<'a> LineBreakIterator<'a> {
         }
     }
 
+    #[inline]
     fn char_len(c: char) -> usize {
         c.len_utf8()
     }
@@ -539,6 +552,11 @@ impl<'a> LineBreakIterator<'a> {
 
     fn is_break_by_normal(&mut self) -> bool {
         is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
+    }
+
+    #[inline]
+    fn use_complex_breaking(c: char) -> bool {
+        use_complex_breaking_utf32(c as u32)
     }
 }
 
@@ -618,6 +636,11 @@ impl<'a> LineBreakIteratorLatin1<'a> {
     fn is_break_by_normal(&mut self) -> bool {
         is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
     }
+
+    #[inline]
+    fn use_complex_breaking(_c: u8) -> bool {
+        false
+    }
 }
 
 // UTF16
@@ -693,6 +716,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
         }
     }
 
+    #[inline]
     fn char_len(c: u32) -> usize {
         if c > 0xffff {
             return 2;
@@ -710,6 +734,11 @@ impl<'a> LineBreakIteratorUTF16<'a> {
 
     fn is_break_by_normal(&mut self) -> bool {
         is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
+    }
+
+    #[inline]
+    fn use_complex_breaking(c: u32) -> bool {
+        use_complex_breaking_utf32(c)
     }
 }
 

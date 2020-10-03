@@ -198,6 +198,7 @@ macro_rules! break_iterator_impl {
         pub struct $name<'a> {
             iter: $iter_attr,
             current: Option<(usize, $char_type)>,
+            result_queue: Vec<usize>,
             break_rule: LineBreakRule,
             word_break_rule: WordBreakRule,
             ja_zh: bool,
@@ -209,6 +210,24 @@ macro_rules! break_iterator_impl {
             fn next(&mut self) -> Option<Self::Item> {
                 if self.is_eof() {
                     return None;
+                }
+
+                if !self.result_queue.is_empty() {
+                    let mut i = 0;
+                    loop {
+                        if i == *self.result_queue.first().unwrap() {
+                            self.result_queue.remove(0);
+                            self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
+                            return Some(self.current.unwrap().0);
+                        }
+                        self.current = self.iter.next();
+                        if self.current.is_none() {
+                            // Why do we have out of index?
+                            break;
+                        }
+                        i += 1;
+                    }
+                    panic!("Why do we have out of index?");
                 }
 
                 loop {
@@ -313,10 +332,14 @@ macro_rules! break_iterator_impl {
                         // Restore iterator to move to head of complex string
                         self.iter = start_iter;
                         self.current = start_point;
-                        if let Some(first) = get_next_break_utf16(s.as_ptr(), s.len()) {
+                        if let Some(breaks) = get_line_break_utf16(s.as_ptr(), s.len()) {
                             let mut i = 1;
+                            self.result_queue = breaks;
                             loop {
-                                if i == first {
+                                if i == *self.result_queue.first().unwrap() {
+                                    self.result_queue.remove(0);
+                                    self.result_queue =
+                                        self.result_queue.iter().map(|r| r - i).collect();
                                     return Some(self.current.unwrap().0);
                                 }
                                 self.current = self.iter.next();
@@ -475,6 +498,7 @@ impl<'a> LineBreakIterator<'a> {
         LineBreakIterator {
             iter: input.char_indices(),
             current: None,
+            result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
@@ -490,6 +514,7 @@ impl<'a> LineBreakIterator<'a> {
         LineBreakIterator {
             iter: input.char_indices(),
             current: None,
+            result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
@@ -546,6 +571,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
                 iter: input,
             },
             current: None,
+            result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
@@ -564,6 +590,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
                 iter: input,
             },
             current: None,
+            result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
@@ -636,6 +663,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
                 iter: input,
             },
             current: None,
+            result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
@@ -654,6 +682,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
                 iter: input,
             },
             current: None,
+            result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,

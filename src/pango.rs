@@ -33,7 +33,7 @@ extern "C" {
     );
 }
 
-pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
+pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
     unsafe {
         let slice = std::slice::from_raw_parts(text, length);
         let s: String = decode_utf16(slice.iter().cloned())
@@ -53,26 +53,31 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
 
         let attrs = std::slice::from_raw_parts(attr_buffer.as_ptr(), length);
         let mut i = 0;
+        let mut breaks: Vec<usize> = Vec::new();
         loop {
             if i >= length {
-                return None;
+                break;
             }
             if attrs[i].is_line_break() {
-                return Some(i);
+                breaks.push(i);
             }
             i += 1;
         }
+        if breaks.len() > 0 {
+            return Some(breaks);
+        }
+        None
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::pango::get_next_break_utf16;
+    use crate::pango::get_line_break_utf16;
 
     #[test]
     fn pango_line_break() {
         let text: [u16; 5] = [0x42, 0x42, 0x42, 0x20, 0x42];
-        let first_break = get_next_break_utf16(text.as_ptr(), text.len());
-        assert_eq!(first_break.unwrap(), 4, "space");
+        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        assert_eq!(breaks.unwrap(), [4], "space");
     }
 }

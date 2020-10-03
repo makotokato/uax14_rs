@@ -2,7 +2,9 @@ use std::ptr;
 
 use winapi::um::usp10::*;
 
-pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
+pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
+    let mut breaks = Vec::new();
+
     unsafe {
         let mut item_buffer = Vec::with_capacity(length + 1);
         let mut out_len = length as i32;
@@ -28,7 +30,7 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
         let mut item_index = 0;
         loop {
             if item_index >= out_len as usize {
-                return None;
+                break;
             }
             let start_offset = items[item_index].iCharPos;
             let mut new_len = length - start_offset as usize;
@@ -54,7 +56,7 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
                 }
                 if attrs[i].fSoftBreak() != 0 {
                     if i + (start_offset as usize) > 0 {
-                        return Some(i + (start_offset as usize));
+                        breaks.push(i + (start_offset as usize));
                     }
                 }
 
@@ -64,13 +66,9 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
             item_index += 1;
         }
     }
-}
 
-pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
-    if let Some(b) = get_next_break_utf16(text, length) {
-        let mut breaks = Vec::new();
-        breaks.push(b);
-        return Some(breaks);
+    if breaks.is_empty() {
+        return None;
     }
-    None
+    Some(breaks)
 }

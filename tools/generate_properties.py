@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 
 import re
 
@@ -16,7 +16,8 @@ with open('EastAsianWidth.txt', 'r') as file:
     while line:
         line = line.strip()
         if not line.startswith('#'):
-            m = re.search("([0-9A-F]{1,6})\.\.([0-9A-F]{1,6})\;([A-Za-z]{1,})", line)
+            m = re.search("([0-9A-F]{1,6})\.\.([0-9A-F]{1,6})\;([A-Za-z]{1,})",
+                          line)
             if m:
                 if int(m.group(2), 16) >= 0x20000:
                     break
@@ -37,7 +38,8 @@ with open('LineBreak.txt', 'r') as file:
     while line:
         line = line.strip()
         if not line.startswith('#'):
-            m = re.search("([0-9A-F]{1,6})\.\.([0-9A-F]{1,6})\;([0-9A-Z]{2,})", line)
+            m = re.search("([0-9A-F]{1,6})\.\.([0-9A-F]{1,6})\;([0-9A-Z]{2,})",
+                          line)
             if m:
                 if int(m.group(2), 16) >= 0x20000:
                     break
@@ -62,7 +64,8 @@ with open('LineBreak.txt', 'r') as file:
                             prop[int(m.group(1), 16)] = "OP_EA"
                         else:
                             prop[int(m.group(1), 16)] = "OP_OP30"
-                    elif m.group(2) == "CP" and ea_table[int(m.group(1), 16)] in ("F", "W", "H"):
+                    elif m.group(2) == "CP" and ea_table[int(
+                            m.group(1), 16)] in ("F", "W", "H"):
                         prop[int(m.group(1), 16)] = "CP_EA"
                     else:
                         prop[int(m.group(1), 16)] = m.group(2)
@@ -76,7 +79,7 @@ prop_type.append("HL_HY")
 prop_type.append("QU_SP")
 prop_type.append("RI_RI")
 for i in prop_type:
-    back_i = i;
+    back_i = i
     for j in prop_type:
         i = back_i
 
@@ -115,7 +118,7 @@ for i in prop_type:
         if i == "CR" and j == "LF":
             rule.append("x")
             continue
-        if i in("CR", "LF", "NL"):
+        if i in ("CR", "LF", "NL"):
             rule.append("!")
             continue
 
@@ -162,10 +165,12 @@ for i in prop_type:
             continue
 
         # LB9
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP", "CL_CP_SP") and j == "CM":
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP",
+                     "CL_CP_SP") and j == "CM":
             rule.append(i)
             continue
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP", "CL_CP_SP") and j == "ZWJ":
+        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP",
+                     "CL_CP_SP") and j == "ZWJ":
             rule.append(i)
             continue
 
@@ -189,7 +194,8 @@ for i in prop_type:
             continue
 
         # LB12a
-        if i not in ("SP", "BA", "HY", "B2_SP", "QU_SP", "CL_CP_SP") and j == "GL":
+        if i not in ("SP", "BA", "HY", "B2_SP", "QU_SP",
+                     "CL_CP_SP") and j == "GL":
             rule.append("x")
             continue
 
@@ -377,57 +383,58 @@ for i in prop_type:
 prop_len = len(prop_type)
 count = 1
 for i in prop_type:
-    print ("pub const %s: u8 = %s;" % (i, str(count)))
+    print("pub const %s: u8 = %s;" % (i, str(count)))
     count = count + 1
 
-print ("pub const PROP_COUNT: usize = %d;" % (count - 1));
+print("pub const PROP_COUNT: usize = %d;" % (count - 1))
 print()
 
-print ("#[allow(dead_code)]")
-print ("pub const BREAK_RULE: i8 = -128;")
-print ("pub const KEEP_RULE: i8 = -1;")
+print("#[allow(dead_code)]")
+print("pub const BREAK_RULE: i8 = -128;")
+print("pub const KEEP_RULE: i8 = -1;")
 print()
 
 for a in range(128):
     first_value = prop[a * 1024]
-    generate_table =False
+    generate_table = False
     for i in range(1024):
-      if prop[a * 1024 + i] != first_value:
-          generate_table = True
-          break
+        if prop[a * 1024 + i] != first_value:
+            generate_table = True
+            break
 
     if not generate_table:
-       table.append("UAX14_PROPERTIES_%s" % first_value)
-       continue
-     
-    print ("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % str(a))
+        table.append("UAX14_PROPERTIES_%s" % first_value)
+        continue
+
+    print("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % str(a))
     for i in range(int(1024)):
         print(" %s," % prop[a * 1024 + i], end="")
-    print ("];")
+    print("];")
     table.append("UAX14_PROPERTIES_%s" % str(a))
-    print ()
+    print()
 
 for t in ["ID", "SG", "XX"]:
-    print ("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % t)
+    print("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % t)
     for i in range(int(1024 / 16)):
         print(" ", end="")
         for j in range(16):
             print(" %s," % t, end="")
         print()
-    print ("];")
-    print ()
+    print("];")
+    print()
 
-print ("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [")
+print("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [")
 for i in table:
     print("  &%s," % i)
-print ("];")
+print("];")
 
-print ("pub const UAX14_RULE_TABLE: [i8; %d] = [" % len(rule))
+print("pub const UAX14_RULE_TABLE: [i8; %d] = [" % len(rule))
 count = 0
 line = 0
-print ("// %s" % prop_type[line])
+print("// %s" % prop_type[line])
 for i in rule:
-    value = 0; # handing state machine
+    value = 0
+    # handing state machine
     if i == "x":
         value = -1
     elif i == "/":
@@ -439,11 +446,11 @@ for i in rule:
     print(" %s /* %s */," % (str(value), prop_type[count]), end="")
     count = count + 1
     if count >= len(prop_type):
-        print ()
+        print()
         count = 0
         line = line + 1
         try:
-             print ("// %s" % prop_type[line])
+            print("// %s" % prop_type[line])
         except:
-             pass
-print ("];")
+            pass
+print("];")

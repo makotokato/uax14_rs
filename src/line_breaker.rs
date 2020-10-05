@@ -205,6 +205,7 @@ macro_rules! break_iterator_impl {
     ($name:ident, $iter_attr:ty, $char_type:ty) => {
         pub struct $name<'a> {
             iter: $iter_attr,
+            len: usize,
             current: Option<(usize, $char_type)>,
             result_queue: Vec<usize>,
             break_rule: LineBreakRule,
@@ -262,15 +263,12 @@ macro_rules! break_iterator_impl {
                         left_prop = self.get_linebreak_property();
                     }
 
-                    let next = self.iter.next();
-                    if next.is_none() {
-                        // EOF
-                        let t = self.current.unwrap();
-                        self.current = None;
-                        return Some(t.0 + $name::char_len(t.1));
-                    }
                     let left_codepoint = self.current;
-                    self.current = next;
+                    self.current = self.iter.next();
+                    if self.current.is_none() {
+                        // EOF
+                        return Some(self.len);
+                    }
                     let right_prop = self.get_linebreak_property();
 
                     // CSS word-break property handling
@@ -332,11 +330,10 @@ macro_rules! break_iterator_impl {
                     let mut break_state = get_break_state(left_prop, right_prop);
                     if break_state >= 0 as i8 {
                         loop {
-                            let prev = self.current.unwrap();
                             self.current = self.iter.next();
                             if self.current.is_none() {
                                 // EOF
-                                return Some(prev.0 + $name::char_len(prev.1));
+                                return Some(self.len);
                             }
 
                             let prop = self.get_linebreak_property();
@@ -425,7 +422,7 @@ macro_rules! break_iterator_impl {
                 if current.is_none() {
                     // EOF
                     self.current = None;
-                    return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
+                    return Some(self.len);
                 }
 
                 state = self.get_linebreak_property_with_rule(current.unwrap().1);
@@ -439,7 +436,7 @@ macro_rules! break_iterator_impl {
                     if current.is_none() {
                         // EOF
                         self.current = None;
-                        return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
+                        return Some(self.len);
                     }
                     state = self.get_linebreak_property_with_rule(current.unwrap().1);
                 }
@@ -452,7 +449,7 @@ macro_rules! break_iterator_impl {
                     if current.is_none() {
                         // EOF
                         self.current = None;
-                        return Some(prev.unwrap().0 + $name::char_len(prev.unwrap().1));
+                        return Some(self.len);
                     }
                     state = self.get_linebreak_property_with_rule(current.unwrap().1);
                 }
@@ -513,6 +510,7 @@ impl<'a> LineBreakIterator<'a> {
     pub fn new(input: &str) -> LineBreakIterator {
         LineBreakIterator {
             iter: input.char_indices(),
+            len: input.len(),
             current: None,
             result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
@@ -529,17 +527,13 @@ impl<'a> LineBreakIterator<'a> {
     ) -> LineBreakIterator {
         LineBreakIterator {
             iter: input.char_indices(),
+            len: input.len(),
             current: None,
             result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
         }
-    }
-
-    #[inline]
-    fn char_len(c: char) -> usize {
-        c.len_utf8()
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
@@ -592,6 +586,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
                 front_offset: 0,
                 iter: input,
             },
+            len: input.len(),
             current: None,
             result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
@@ -611,16 +606,13 @@ impl<'a> LineBreakIteratorLatin1<'a> {
                 front_offset: 0,
                 iter: input,
             },
+            len: input.len(),
             current: None,
             result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
         }
-    }
-
-    fn char_len(_c: u8) -> usize {
-        1
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
@@ -689,6 +681,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
                 front_offset: 0,
                 iter: input,
             },
+            len: input.len(),
             current: None,
             result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
@@ -708,20 +701,13 @@ impl<'a> LineBreakIteratorUTF16<'a> {
                 front_offset: 0,
                 iter: input,
             },
+            len: input.len(),
             current: None,
             result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
         }
-    }
-
-    #[inline]
-    fn char_len(c: u32) -> usize {
-        if c > 0xffff {
-            return 2;
-        }
-        1
     }
 
     fn get_linebreak_property(&mut self) -> u8 {

@@ -16,7 +16,7 @@ const kCFStringTokenizerTokenNone: CFStringTokenizerTokenType = 0;
 extern "C" {
     fn CFStringCreateWithCharactersNoCopy(
         alloc: CFAllocatorRef,
-        chars: *const u16,
+        chars: *const UniChar,
         numChars: CFIndex,
         contentsDeallocator: CFAllocatorRef,
     ) -> CFStringRef;
@@ -33,7 +33,8 @@ extern "C" {
     fn CFStringTokenizerGetCurrentTokenRange(tokenizer: CFStringTokenizerRef) -> CFRange;
 }
 
-pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
+pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
+    let mut breaks = Vec::new();
     unsafe {
         let os_str = CFStringCreateWithCharactersNoCopy(
             kCFAllocatorDefault,
@@ -57,24 +58,18 @@ pub fn get_next_break_utf16(text: *const u16, length: usize) -> Option<usize> {
             if token_type == kCFStringTokenizerTokenNone {
                 CFRelease(token);
                 CFRelease(os_str as *const c_void);
-                return None;
+                break;
             }
 
             let result = CFStringTokenizerGetCurrentTokenRange(token);
             if result.location != 0 {
-                CFRelease(token);
-                CFRelease(os_str as *const c_void);
-                return Some(result.location as usize);
+                breaks.push(result.location as usize);
             }
         }
     }
-}
 
-pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
-    if let Some(b) = get_next_break_utf16(text, length) {
-        let mut breaks = Vec::new();
-        breaks.push(b);
-        return Some(breaks);
+    if breaks.is_empty() {
+        return None;
     }
-    None
+    Some(breaks)
 }

@@ -485,20 +485,18 @@ macro_rules! break_iterator_impl {
                 // Restore iterator to move to head of complex string
                 self.iter = start_iter;
                 self.current = start_point;
-                if let Some(breaks) = get_line_break_utf16(s.as_ptr(), s.len()) {
-                    let mut i = 1;
-                    self.result_queue = breaks;
-                    loop {
-                        if i == *self.result_queue.first().unwrap() {
-                            self.result_queue.remove(0);
-                            self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
-                            return Some(self.current.unwrap().0);
-                        }
-                        self.current = self.iter.next();
-                        i += 1;
+                let breaks = get_line_break_utf16(s.as_ptr(), s.len())?;
+                let mut i = 1;
+                self.result_queue = breaks;
+                loop {
+                    if i == *self.result_queue.first().unwrap() {
+                        self.result_queue.remove(0);
+                        self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
+                        return Some(self.current.unwrap().0);
                     }
+                    self.current = self.iter.next();
+                    i += 1;
                 }
-                None
             }
         }
     };

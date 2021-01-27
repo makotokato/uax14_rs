@@ -117,9 +117,10 @@ fn linebreak_strict() {
     //strict("サ\u{20AC}サ", false, vec![9], vec![3]);
 
     // from css/css-text/i18n/ja/css-text-line-break-ja-pr-strict.html
-    //strict("文\u{00b1}文", true, vec![5, 8], vec![1, 3]);
-    //strict("文\u{20ac}文", true, vec![3, 9], vec![1, 3]);
-    //strict("文\u{ff04}文", true, vec![3, 9], vec![1, 3]);
+    // TODO: Why ID ÷ ID × PR × ID ÷ ID ?
+    //strict("文文\u{00b1}字字", true, vec![3, 11, 14], vec![1, 4, 5]);
+    //strict("文文\u{20AC}字字", true, vec![3, 11, 14], vec![1, 4, 5]);
+    //strict("文文\u{FF04}字字", true, vec![3, 11, 14], vec![1, 4, 5]);
 }
 
 #[test]
@@ -149,8 +150,10 @@ fn linebreak_normal() {
     normal("サ\u{20AC}サ", true, vec![3, 9], vec![1, 3]);
 
     // from css/css-text/i18n/unknown-lang/css-text-line-break-pr-normal.html
-    // TODO:
-    //normal("文\u{00b1}文", false, vec![5, 8], vec![2, 3]);
+    // TODO: Why ID ÷ ID × PR × ID ÷ ID ?
+    //normal("文文\u{00b1}字字", false, vec![3, 11, 14], vec![1, 4, 5]);
+    //normal("文文\u{20AC}字字", false, vec![3, 11, 14], vec![1, 4, 5]);
+    //normal("文文\u{2116}字字", false, vec![3, 11, 14], vec![1, 4, 5]);
 }
 
 #[test]

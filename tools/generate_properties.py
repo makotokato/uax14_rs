@@ -381,19 +381,23 @@ for i in prop_type:
 
         rule.append("/")
 
-#prop_type = sorted([x for x in set(prop)])
-prop_len = len(prop_type)
-count = 1
-for i in prop_type:
-    print("pub const %s: u8 = %s;" % (i, str(count)))
-    count = count + 1
+with open('lb_define.rs', 'w') as prop_file:
+    #prop_type = sorted([x for x in set(prop)])
+    prop_len = len(prop_type)
+    count = 1
+    for i in prop_type:
+        prop_file.write("pub const %s: u8 = %s;\n" % (i, str(count)))
+        count = count + 1
 
-print("pub const PROP_COUNT: usize = %d;" % (count - 1))
-print()
+    prop_file.write("pub const PROP_COUNT: usize = %d;\n" % (count - 1))
+    prop_file.write("\n")
 
-print("#[allow(dead_code)]")
-print("pub const BREAK_RULE: i8 = -128;")
-print("pub const KEEP_RULE: i8 = -1;")
+    prop_file.write("#[allow(dead_code)]\n")
+    prop_file.write("pub const BREAK_RULE: i8 = -128;\n")
+    prop_file.write("pub const KEEP_RULE: i8 = -1;\n")
+    prop_file.write("\n")
+
+print("use crate::lb_define::*;")
 print()
 
 for a in range(128):
@@ -429,6 +433,7 @@ print("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [")
 for i in table:
     print("  &%s," % i)
 print("];")
+print()
 
 print("pub const UAX14_RULE_TABLE: [i8; %d] = [" % len(rule))
 count = 0
@@ -445,7 +450,7 @@ for i in rule:
         value = -128
     else:
         value = "%s as i8" % i
-    print(" %s /* %s */," % (str(value), prop_type[count]), end="")
+    print(" %s," % str(value), end="")
     count = count + 1
     if count >= len(prop_type):
         print()

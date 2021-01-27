@@ -9,6 +9,7 @@ use crate::pango::*;
 #[cfg(target_os = "windows")]
 use crate::windows::*;
 
+use crate::lb_define::*;
 use crate::properties::*;
 
 use core::char;
@@ -730,7 +731,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
 mod tests {
     use crate::line_breaker::get_linebreak_property_with_rule;
     use crate::line_breaker::is_break;
-    use crate::properties::*;
+    use crate::lb_define::*;
     use crate::LineBreakRule;
 
     fn get_linebreak_property(codepoint: char) -> u8 {

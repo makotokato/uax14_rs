@@ -1,6 +1,13 @@
 extern crate unicode_width;
 
-#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+#[cfg(target_os = "android")]
+use crate::android::*;
+#[cfg(not(any(
+    target_os = "macos",
+    target_os = "windows",
+    target_os = "linux",
+    target_os = "android"
+)))]
 use crate::generic::*;
 #[cfg(target_os = "macos")]
 use crate::macos::*;
@@ -15,6 +22,9 @@ use crate::properties::*;
 use core::char;
 use core::str::CharIndices;
 use unicode_width::UnicodeWidthChar;
+
+#[cfg(target_os = "android")]
+use std::ffi::c_void;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum LineBreakRule {
@@ -204,6 +214,7 @@ fn use_complex_breaking_utf32(codepoint: u32) -> bool {
 
 macro_rules! break_iterator_impl {
     ($name:ident, $iter_attr:ty, $char_type:ty) => {
+        #[allow(dead_code)]
         pub struct $name<'a> {
             iter: $iter_attr,
             len: usize,
@@ -212,6 +223,8 @@ macro_rules! break_iterator_impl {
             break_rule: LineBreakRule,
             word_break_rule: WordBreakRule,
             ja_zh: bool,
+            #[cfg(target_os = "android")]
+            env: *mut c_void,
         }
 
         impl<'a> Iterator for $name<'a> {
@@ -486,7 +499,7 @@ macro_rules! break_iterator_impl {
                 // Restore iterator to move to head of complex string
                 self.iter = start_iter;
                 self.current = start_point;
-                let breaks = get_line_break_utf16(s.as_ptr(), s.len())?;
+                let breaks = self.get_line_break_utf16(s.as_ptr(), s.len())?;
                 let mut i = 1;
                 self.result_queue = breaks;
                 loop {
@@ -506,6 +519,7 @@ macro_rules! break_iterator_impl {
 break_iterator_impl!(LineBreakIterator, CharIndices<'a>, char);
 
 impl<'a> LineBreakIterator<'a> {
+    /// Create line break iterator
     pub fn new(input: &str) -> LineBreakIterator {
         LineBreakIterator {
             iter: input.char_indices(),
@@ -515,9 +529,12 @@ impl<'a> LineBreakIterator<'a> {
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
+            #[cfg(target_os = "android")]
+            env: std::ptr::null_mut(),
         }
     }
 
+    /// Create line break iterator with CSS rules
     pub fn new_with_break_rule(
         input: &str,
         line_break_rule: LineBreakRule,
@@ -532,6 +549,8 @@ impl<'a> LineBreakIterator<'a> {
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
+            #[cfg(target_os = "android")]
+            env: std::ptr::null_mut(),
         }
     }
 
@@ -550,6 +569,25 @@ impl<'a> LineBreakIterator<'a> {
     #[inline]
     fn use_complex_breaking(c: char) -> bool {
         use_complex_breaking_utf32(c as u32)
+    }
+
+    #[cfg(target_os = "android")]
+    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
+        if self.env.is_null() {
+            return None;
+        }
+        get_line_break_utf16(self.env, text, length)
+    }
+
+    #[cfg(not(target_os = "android"))]
+    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
+        get_line_break_utf16(text, length)
+    }
+
+    /// Set JNI env for Android
+    #[cfg(target_os = "android")]
+    pub fn set_jni_env(&mut self, env: *mut c_void) {
+        self.env = env;
     }
 }
 
@@ -579,6 +617,7 @@ impl<'a> Iterator for Latin1Indices<'a> {
 break_iterator_impl!(LineBreakIteratorLatin1, Latin1Indices<'a>, u8);
 
 impl<'a> LineBreakIteratorLatin1<'a> {
+    /// Create line break iterator
     pub fn new(input: &[u8]) -> LineBreakIteratorLatin1 {
         LineBreakIteratorLatin1 {
             iter: Latin1Indices {
@@ -591,9 +630,12 @@ impl<'a> LineBreakIteratorLatin1<'a> {
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
+            #[cfg(target_os = "android")]
+            env: std::ptr::null_mut(),
         }
     }
 
+    /// Create line break iterator with CSS rules
     pub fn new_with_break_rule(
         input: &[u8],
         line_break_rule: LineBreakRule,
@@ -611,6 +653,8 @@ impl<'a> LineBreakIteratorLatin1<'a> {
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
+            #[cfg(target_os = "android")]
+            env: std::ptr::null_mut(),
         }
     }
 
@@ -631,6 +675,10 @@ impl<'a> LineBreakIteratorLatin1<'a> {
     #[inline]
     fn use_complex_breaking(_c: u8) -> bool {
         false
+    }
+
+    fn get_line_break_utf16(&mut self, _text: *const u16, _length: usize) -> Option<Vec<usize>> {
+        None
     }
 }
 
@@ -674,6 +722,7 @@ impl<'a> Iterator for UTF16Indices<'a> {
 break_iterator_impl!(LineBreakIteratorUTF16, UTF16Indices<'a>, u32);
 
 impl<'a> LineBreakIteratorUTF16<'a> {
+    /// Create line break iterator
     pub fn new(input: &[u16]) -> LineBreakIteratorUTF16 {
         LineBreakIteratorUTF16 {
             iter: UTF16Indices {
@@ -686,9 +735,12 @@ impl<'a> LineBreakIteratorUTF16<'a> {
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
+            #[cfg(target_os = "android")]
+            env: std::ptr::null_mut(),
         }
     }
 
+    /// Create line break iterator with CSS rules
     pub fn new_with_break_rule(
         input: &[u16],
         line_break_rule: LineBreakRule,
@@ -706,6 +758,8 @@ impl<'a> LineBreakIteratorUTF16<'a> {
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
+            #[cfg(target_os = "android")]
+            env: std::ptr::null_mut(),
         }
     }
 
@@ -725,13 +779,32 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     fn use_complex_breaking(c: u32) -> bool {
         use_complex_breaking_utf32(c)
     }
+
+    #[cfg(target_os = "android")]
+    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
+        if self.env.is_null() {
+            return None;
+        }
+        get_line_break_utf16(self.env, text, length)
+    }
+
+    #[cfg(not(target_os = "android"))]
+    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
+        get_line_break_utf16(text, length)
+    }
+
+    /// Set JNI env for Android
+    #[cfg(target_os = "android")]
+    pub fn set_jni_env(&mut self, env: *mut c_void) {
+        self.env = env;
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::lb_define::*;
     use crate::line_breaker::get_linebreak_property_with_rule;
     use crate::line_breaker::is_break;
-    use crate::lb_define::*;
     use crate::LineBreakRule;
 
     fn get_linebreak_property(codepoint: char) -> u8 {

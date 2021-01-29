@@ -3,14 +3,21 @@ mod line_breaker;
 mod properties;
 
 // platform specific breaker
+#[cfg(target_os = "android")]
+mod android;
+#[cfg(not(any(
+    target_os = "macos",
+    target_os = "windows",
+    target_os = "linux",
+    target_os = "android"
+)))]
+mod generic;
 #[cfg(target_os = "macos")]
 mod macos;
-#[cfg(target_os = "windows")]
-mod windows;
 #[cfg(target_os = "linux")]
 mod pango;
-#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-mod generic;
+#[cfg(target_os = "windows")]
+mod windows;
 
 pub use crate::line_breaker::*;
 

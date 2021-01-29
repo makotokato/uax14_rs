@@ -20,5 +20,5 @@ features = ["usp10"]
 git = "https://github.com/servo/core-foundation-rs.git"
 rev = "3f007d17e50c394e91ec9cfd1e213a49926699f3"
 
-[profile.release]
-lto = true
+[target."cfg(target_os = \"android\")".dependencies.jni]
+version = "0.18.0"

@@ -14,12 +14,6 @@ const kCFStringTokenizerUnitLineBreak: CFOptionFlags = 3;
 const kCFStringTokenizerTokenNone: CFStringTokenizerTokenType = 0;
 
 extern "C" {
-    fn CFStringCreateWithCharactersNoCopy(
-        alloc: CFAllocatorRef,
-        chars: *const UniChar,
-        numChars: CFIndex,
-        contentsDeallocator: CFAllocatorRef,
-    ) -> CFStringRef;
     fn CFStringTokenizerCreate(
         alloc: CFAllocatorRef,
         string: CFStringRef,

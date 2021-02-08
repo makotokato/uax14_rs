@@ -17,8 +17,7 @@ version = "0.3.7"
 features = ["usp10"]
 
 [target."cfg(target_os = \"macos\")".dependencies.core-foundation]
-git = "https://github.com/servo/core-foundation-rs.git"
-rev = "3f007d17e50c394e91ec9cfd1e213a49926699f3"
+version = "0.9"
 
 [target."cfg(target_os = \"android\")".dependencies.jni]
 version = "0.18.0"

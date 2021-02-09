@@ -199,13 +199,13 @@ fn get_break_state(left: u8, right: u8) -> i8 {
     UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "android")))]
 #[inline]
 fn use_complex_breaking_utf32(codepoint: u32) -> bool {
     // Thai
     codepoint >= 0xe00 && codepoint <= 0xe7f
 }
-#[cfg(target_os = "macos")]
+#[cfg(any(target_os = "macos", target_os = "android"))]
 #[inline]
 fn use_complex_breaking_utf32(codepoint: u32) -> bool {
     // Thai, Lao and Khmer

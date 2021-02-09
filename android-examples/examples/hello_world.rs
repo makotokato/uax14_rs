@@ -72,31 +72,31 @@ fn main() {
     let utf16: Vec<u16> = TEST_STR.encode_utf16().map(|x| x).collect();
     let now = Instant::now();
     let mut count = 0;
-    for _i in 0..100 {
+    for _i in 0..1000 {
         let iter = LineBreakIteratorUTF16::new(&utf16);
         count += iter.count();
     }
-    println!("char bench. times = {} ns", now.elapsed().as_nanos() / 100);
+    println!("char bench. times = {} ns", now.elapsed().as_nanos() / 1000);
 
     let utf16: Vec<u16> = TEST_STR2.encode_utf16().map(|x| x).collect();
     let now = Instant::now();
-    for _i in 0..100 {
+    for _i in 0..1000 {
         let iter = LineBreakIteratorUTF16::new(&utf16);
         count += iter.count();
     }
     println!(
         "complex char bench. times = {} ns",
-        now.elapsed().as_nanos() / 100
+        now.elapsed().as_nanos() / 1000
     );
 
     let now = Instant::now();
-    for _i in 0..100 {
+    for _i in 0..10000 {
         let mut iter = LineBreakIteratorUTF16::new(&utf16);
         iter.set_jni_env(env as *mut std::ffi::c_void);
         count += iter.count();
     }
     println!(
         "complex char bench. times = {} ns",
-        now.elapsed().as_nanos() / 100
+        now.elapsed().as_nanos() / 10000
     );
 }

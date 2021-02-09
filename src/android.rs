@@ -32,12 +32,12 @@ pub fn get_line_break_utf16(
         .map(|r| r.unwrap())
         .collect();
 
-    let java_string = env.new_string(s).unwrap();
+    let java_string = env.auto_local(env.new_string(s).unwrap());
     env.call_method(
         &iter_obj,
         "setText",
         "(Ljava/lang/String;)V",
-        &[JValue::from(java_string)],
+        &[JValue::from(&java_string)],
     )
     .ok()?
     .v()

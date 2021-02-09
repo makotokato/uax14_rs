@@ -252,7 +252,6 @@ macro_rules! break_iterator_impl {
                         }
                         i += 1;
                     }
-                    panic!("Why do we have out of index?");
                 }
 
                 loop {

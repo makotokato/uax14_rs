@@ -246,8 +246,9 @@ macro_rules! break_iterator_impl {
                         }
                         self.current = self.iter.next();
                         if self.current.is_none() {
-                            // Why do we have out of index?
-                            break;
+                            // Reach EOF
+                            self.result_queue.clear();
+                            return Some(self.len);
                         }
                         i += 1;
                     }
@@ -502,6 +503,7 @@ macro_rules! break_iterator_impl {
                 let breaks = self.get_line_break_utf16(s.as_ptr(), s.len())?;
                 let mut i = 1;
                 self.result_queue = breaks;
+                // result_queue vector is utf-16 index that is in BMP.
                 loop {
                     if i == *self.result_queue.first().unwrap() {
                         self.result_queue.remove(0);
@@ -509,6 +511,9 @@ macro_rules! break_iterator_impl {
                         return Some(self.current.unwrap().0);
                     }
                     self.current = self.iter.next();
+                    if self.current.is_none() {
+                        return Some(self.len);
+                    }
                     i += 1;
                 }
             }

@@ -1,4 +1,5 @@
 use jni::objects::JValue;
+use jni::signature::{JavaType, Primitive};
 use jni::sys;
 use jni::JNIEnv;
 use std::char::decode_utf16;
@@ -42,9 +43,11 @@ pub fn get_line_break_utf16(
     .v()
     .ok()?;
 
+   let next_method =  env.get_method_id(&class, "next", "()I").ok()?;
     loop {
+        let ret = JavaType::Primitive(Primitive::Int);
         let location = env
-            .call_method(&iter_obj, "next", "()I", &[])
+            .call_method_unchecked(&iter_obj, next_method, ret, &[])
             .ok()?
             .i()
             .ok()?;

@@ -43,7 +43,7 @@ pub fn get_line_break_utf16(
     .v()
     .ok()?;
 
-   let next_method =  env.get_method_id(&class, "next", "()I").ok()?;
+    let next_method = env.get_method_id(&class, "next", "()I").ok()?;
     loop {
         let ret = JavaType::Primitive(Primitive::Int);
         let location = env

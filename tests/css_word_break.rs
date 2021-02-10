@@ -173,13 +173,18 @@ fn wordbreak_normal() {
     #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
 
-    // from css/css-text/word-break/word-break-normal-km-000.html
-    //let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
-    //#[cfg(target_os = "macos")]
-    //normal(_s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
+    #[cfg(target_os = "macos")]
+    {
+        // from css/css-text/word-break/word-break-normal-km-000.html
+        let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
+        #[cfg(target_os = "macos")]
+        normal(_s, vec![27, 54, 60, 66, 81], vec![9, 18, 20, 22, 27]);
+    }
 
-    // from css/css-text/word-break/word-break-normal-lo-000.html
-    //let _s = "ພາສາລາວພາສາລາວພາສາລາວ";
-    //#[cfg(target_os = "macos")]
-    //normal(_s, vec![63], vec![4, 7, 11, 14]);
+    #[cfg(target_os = "macos")]
+    {
+        // from css/css-text/word-break/word-break-normal-lo-000.html
+        let _s = "ພາສາລາວພາສາລາວພາສາລາວ";
+        normal(_s, vec![12, 21, 33, 42, 54, 63], vec![4, 7, 11, 14, 18, 21]);
+    }
 }

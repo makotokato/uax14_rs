@@ -126,7 +126,7 @@ fn wordbreak_breakall() {
     let s = "X.";
     break_all(s, vec![2], vec![2]);
 
-    // CJ case
+    // ID and CJ
     let s = "フォ";
     break_all(s, vec![3, 6], vec![1, 2]);
 }
@@ -160,6 +160,10 @@ fn wordbreak_keepall() {
     // from css/css-text/word-boundary/word-boundary-107.html
     let s = "しょう。";
     keep_all(s, vec![12], vec![4]);
+
+    // failed test. JL, JV and JT
+    // let s = "\u{110B}\u{1162}\u{1100}\u{1175}\u{1111}\u{1161}\u{11AB}\u{1103}\u{1161}";
+    // keep_all(s, vec![27], vec![9]);
 }
 
 #[test]

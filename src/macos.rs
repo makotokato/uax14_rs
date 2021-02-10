@@ -36,36 +36,40 @@ extern "C" {
 
 pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
     let mut breaks = Vec::new();
-    unsafe {
-        let os_str = CFStringCreateWithCharactersNoCopy(
+    let os_str = unsafe {
+        CFStringCreateWithCharactersNoCopy(
             kCFAllocatorDefault,
             text,
             length as CFIndex,
             kCFAllocatorNull,
-        );
-        let range: CFRange = CFRange {
-            location: 0,
-            length: length as isize,
-        };
-        let token = CFStringTokenizerCreate(
+        )
+    };
+    let range: CFRange = CFRange {
+        location: 0,
+        length: length as isize,
+    };
+    let token = unsafe {
+        CFStringTokenizerCreate(
             kCFAllocatorDefault,
             os_str,
             range,
             kCFStringTokenizerUnitLineBreak,
             ptr::null(),
-        );
-        loop {
-            let token_type = CFStringTokenizerAdvanceToNextToken(token);
-            if token_type == kCFStringTokenizerTokenNone {
+        )
+    };
+    loop {
+        let token_type = unsafe { CFStringTokenizerAdvanceToNextToken(token) };
+        if token_type == kCFStringTokenizerTokenNone {
+            unsafe {
                 CFRelease(token);
                 CFRelease(os_str as *const c_void);
-                break;
             }
+            break;
+        }
 
-            let result = CFStringTokenizerGetCurrentTokenRange(token);
-            if result.location != 0 {
-                breaks.push(result.location as usize);
-            }
+        let result = unsafe { CFStringTokenizerGetCurrentTokenRange(token) };
+        if result.location != 0 {
+            breaks.push(result.location as usize);
         }
     }
 

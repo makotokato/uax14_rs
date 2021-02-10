@@ -162,8 +162,8 @@ fn wordbreak_keepall() {
     keep_all(s, vec![12], vec![4]);
 
     // failed test. JL, JV and JT
-    // let s = "\u{110B}\u{1162}\u{1100}\u{1175}\u{1111}\u{1161}\u{11AB}\u{1103}\u{1161}";
-    // keep_all(s, vec![27], vec![9]);
+    let s = "\u{110B}\u{1162}\u{1100}\u{1175}\u{1111}\u{1161}\u{11AB}\u{1103}\u{1161}";
+    keep_all(s, vec![27], vec![9]);
 }
 
 #[test]

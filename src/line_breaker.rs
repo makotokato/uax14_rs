@@ -195,6 +195,7 @@ fn is_break(left: u8, right: u8) -> bool {
 
 #[inline]
 fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
+    //  typographic letter units shouldn't be break
     (left == AI
         || left == AL
         || left == ID
@@ -202,6 +203,9 @@ fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
         || left == HY
         || left == H2
         || left == H3
+        || left == JL
+        || left == JV
+        || left == JT
         || left == CJ)
         && (right == AI
             || right == AL
@@ -210,6 +214,9 @@ fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
             || right == HY
             || right == H2
             || right == H3
+            || right == JL
+            || right == JV
+            || right == JT
             || right == CJ)
 }
 

@@ -51,7 +51,7 @@ pub fn get_line_break_utf16(
             .ok()?
             .i()
             .ok()?;
-        if location < 0 {
+        if location < 0 || length <= location as usize {
             break;
         }
         breaks.push(location as usize);

@@ -91,5 +91,9 @@ mod tests {
         ];
         let breaks = get_line_break_utf16(text.as_ptr(), text.len());
         assert_eq!(breaks.unwrap(), [4, 7, 11], "Thai test");
+
+        let text: [u16; 4] = [0x0e20, 0x0e32, 0x0e29, 0x0e32];
+        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        assert_eq!(breaks, None, "Thai test");
     }
 }

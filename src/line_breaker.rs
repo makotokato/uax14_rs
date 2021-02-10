@@ -364,6 +364,8 @@ macro_rules! break_iterator_impl {
                         if result.is_some() {
                             return result;
                         }
+                        // result is None means that platform API doesn't found any break opportunity.
+                        // I may have to fetch text until non-SA character?.
                     }
 
                     // If break_state is equals or grater than 0, it is alias of property.

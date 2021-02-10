@@ -125,6 +125,10 @@ fn wordbreak_breakall() {
     // css/css-text/word-break/word-break-break-all-inline-008.html
     let s = "X.";
     break_all(s, vec![2], vec![2]);
+
+    // CJ case
+    let s = "フォ";
+    break_all(s, vec![3, 6], vec![1, 2]);
 }
 
 #[test]

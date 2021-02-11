@@ -244,7 +244,7 @@ macro_rules! break_iterator_impl {
         pub struct $name<'a> {
             iter: $iter_attr,
             len: usize,
-            current: Option<(usize, $char_type)>,
+            current_pos_data: Option<(usize, $char_type)>,
             result_queue: Vec<usize>,
             break_rule: LineBreakRule,
             word_break_rule: WordBreakRule,
@@ -268,10 +268,10 @@ macro_rules! break_iterator_impl {
                         if i == *self.result_queue.first().unwrap() {
                             self.result_queue.remove(0);
                             self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
-                            return Some(self.current.unwrap().0);
+                            return Some(self.current_pos_data.unwrap().0);
                         }
-                        self.current = self.iter.next();
-                        if self.current.is_none() {
+                        self.current_pos_data = self.iter.next();
+                        if self.current_pos_data.is_none() {
                             // Reach EOF
                             self.result_queue.clear();
                             return Some(self.len);
@@ -303,9 +303,9 @@ macro_rules! break_iterator_impl {
                         left_prop = self.get_linebreak_property();
                     }
 
-                    let left_codepoint = self.current;
-                    self.current = self.iter.next();
-                    if self.current.is_none() {
+                    let left_codepoint = self.current_pos_data;
+                    self.current_pos_data = self.iter.next();
+                    if self.current_pos_data.is_none() {
                         // EOF
                         return Some(self.len);
                     }
@@ -333,32 +333,32 @@ macro_rules! break_iterator_impl {
                     match self.break_rule {
                         LineBreakRule::Normal => {
                             if self.is_break_by_normal() {
-                                return Some(self.current.unwrap().0);
+                                return Some(self.current_pos_data.unwrap().0);
                             }
                         }
                         LineBreakRule::Loose => {
                             if let Some(breakable) = is_break_utf32_by_loose(
                                 left_codepoint.unwrap().1 as u32,
-                                self.current.unwrap().1 as u32,
+                                self.current_pos_data.unwrap().1 as u32,
                                 left_prop,
                                 right_prop,
                                 self.ja_zh,
                             ) {
                                 if breakable {
-                                    return Some(self.current.unwrap().0);
+                                    return Some(self.current_pos_data.unwrap().0);
                                 }
                                 continue;
                             }
                         }
                         LineBreakRule::Anywhere => {
-                            return Some(self.current.unwrap().0);
+                            return Some(self.current_pos_data.unwrap().0);
                         }
                         _ => (),
                     };
 
                     // UAX14 doesn't have Thai etc, so use another way.
                     if $name::use_complex_breaking(left_codepoint.unwrap().1)
-                        && $name::use_complex_breaking(self.current.unwrap().1)
+                        && $name::use_complex_breaking(self.current_pos_data.unwrap().1)
                     {
                         let result = self.handle_complex_language(left_codepoint.unwrap().1);
                         if result.is_some() {
@@ -372,8 +372,8 @@ macro_rules! break_iterator_impl {
                     let mut break_state = get_break_state(left_prop, right_prop);
                     if break_state >= 0 as i8 {
                         loop {
-                            self.current = self.iter.next();
-                            if self.current.is_none() {
+                            self.current_pos_data = self.iter.next();
+                            if self.current_pos_data.is_none() {
                                 // EOF
                                 return Some(self.len);
                             }
@@ -387,11 +387,11 @@ macro_rules! break_iterator_impl {
                         if break_state == KEEP_RULE {
                             continue;
                         }
-                        return Some(self.current.unwrap().0);
+                        return Some(self.current_pos_data.unwrap().0);
                     }
 
                     if is_break(left_prop, right_prop) {
-                        return Some(self.current.unwrap().0);
+                        return Some(self.current_pos_data.unwrap().0);
                     }
                 }
             }
@@ -400,9 +400,9 @@ macro_rules! break_iterator_impl {
         impl<'a> $name<'a> {
             #[inline]
             fn is_eof(&mut self) -> bool {
-                if self.current.is_none() {
-                    self.current = self.iter.next();
-                    if self.current.is_none() {
+                if self.current_pos_data.is_none() {
+                    self.current_pos_data = self.iter.next();
+                    if self.current_pos_data.is_none() {
                         return true;
                     }
                 }
@@ -413,7 +413,7 @@ macro_rules! break_iterator_impl {
                 // Handle LB25
                 // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
                 let mut old_iter = self.iter.clone();
-                let mut current = self.current;
+                let mut current = self.current_pos_data;
                 let mut state = self.get_linebreak_property();
 
                 if state == PR || state == PO {
@@ -463,7 +463,7 @@ macro_rules! break_iterator_impl {
                 current = self.iter.next();
                 if current.is_none() {
                     // EOF
-                    self.current = None;
+                    self.current_pos_data = None;
                     return Some(self.len);
                 }
 
@@ -477,7 +477,7 @@ macro_rules! break_iterator_impl {
                     current = self.iter.next();
                     if current.is_none() {
                         // EOF
-                        self.current = None;
+                        self.current_pos_data = None;
                         return Some(self.len);
                     }
                     state = self.get_linebreak_property_with_rule(current.unwrap().1);
@@ -490,20 +490,20 @@ macro_rules! break_iterator_impl {
                     current = self.iter.next();
                     if current.is_none() {
                         // EOF
-                        self.current = None;
+                        self.current_pos_data = None;
                         return Some(self.len);
                     }
                     state = self.get_linebreak_property_with_rule(current.unwrap().1);
                 }
 
                 if state == PR || state == PO {
-                    self.current = current;
+                    self.current_pos_data = current;
                     // Continue LB25 rule
                     return self.handle_lb25();
                 }
                 // Restore iterator that is NU/CL/CP position.
                 self.iter = old_iter;
-                self.current = prev;
+                self.current_pos_data = prev;
                 return None;
             }
 
@@ -511,22 +511,22 @@ macro_rules! break_iterator_impl {
             // These languages uses dictionary-based breaker, so we use OS's line breaker instead.
             fn handle_complex_language(&mut self, left_codepoint: $char_type) -> Option<usize> {
                 let start_iter = self.iter.clone();
-                let start_point = self.current;
+                let start_point = self.current_pos_data;
                 let mut s = Vec::new();
                 s.push(left_codepoint as u16);
                 loop {
-                    s.push(self.current.unwrap().1 as u16);
-                    self.current = self.iter.next();
-                    if self.current.is_none() {
+                    s.push(self.current_pos_data.unwrap().1 as u16);
+                    self.current_pos_data = self.iter.next();
+                    if self.current_pos_data.is_none() {
                         break;
                     }
-                    if !$name::use_complex_breaking(self.current.unwrap().1) {
+                    if !$name::use_complex_breaking(self.current_pos_data.unwrap().1) {
                         break;
                     }
                 }
                 // Restore iterator to move to head of complex string
                 self.iter = start_iter;
-                self.current = start_point;
+                self.current_pos_data = start_point;
                 let breaks = self.get_line_break_utf16(s.as_ptr(), s.len())?;
                 let mut i = 1;
                 self.result_queue = breaks;
@@ -535,10 +535,10 @@ macro_rules! break_iterator_impl {
                     if i == *self.result_queue.first().unwrap() {
                         self.result_queue.remove(0);
                         self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
-                        return Some(self.current.unwrap().0);
+                        return Some(self.current_pos_data.unwrap().0);
                     }
-                    self.current = self.iter.next();
-                    if self.current.is_none() {
+                    self.current_pos_data = self.iter.next();
+                    if self.current_pos_data.is_none() {
                         return Some(self.len);
                     }
                     i += 1;
@@ -556,7 +556,7 @@ impl<'a> LineBreakIterator<'a> {
         LineBreakIterator {
             iter: input.char_indices(),
             len: input.len(),
-            current: None,
+            current_pos_data: None,
             result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
@@ -576,7 +576,7 @@ impl<'a> LineBreakIterator<'a> {
         LineBreakIterator {
             iter: input.char_indices(),
             len: input.len(),
-            current: None,
+            current_pos_data: None,
             result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
@@ -588,7 +588,7 @@ impl<'a> LineBreakIterator<'a> {
 
     fn get_linebreak_property(&mut self) -> u8 {
         get_linebreak_property_with_rule(
-            self.current.unwrap().1,
+            self.current_pos_data.unwrap().1,
             self.break_rule,
             self.word_break_rule,
             self.ja_zh,
@@ -605,7 +605,7 @@ impl<'a> LineBreakIterator<'a> {
     }
 
     fn is_break_by_normal(&mut self) -> bool {
-        is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
+        is_break_utf32_by_normal(self.current_pos_data.unwrap().1 as u32, self.ja_zh)
     }
 
     #[inline]
@@ -667,7 +667,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
                 iter: input,
             },
             len: input.len(),
-            current: None,
+            current_pos_data: None,
             result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
@@ -690,7 +690,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
                 iter: input,
             },
             len: input.len(),
-            current: None,
+            current_pos_data: None,
             result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
@@ -702,7 +702,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
 
     fn get_linebreak_property(&mut self) -> u8 {
         // No CJ on Latin1
-        get_linebreak_property_latin1(self.current.unwrap().1)
+        get_linebreak_property_latin1(self.current_pos_data.unwrap().1)
     }
 
     fn get_linebreak_property_with_rule(&mut self, c: u8) -> u8 {
@@ -711,7 +711,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
     }
 
     fn is_break_by_normal(&mut self) -> bool {
-        is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
+        is_break_utf32_by_normal(self.current_pos_data.unwrap().1 as u32, self.ja_zh)
     }
 
     #[inline]
@@ -772,7 +772,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
                 iter: input,
             },
             len: input.len(),
-            current: None,
+            current_pos_data: None,
             result_queue: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
@@ -795,7 +795,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
                 iter: input,
             },
             len: input.len(),
-            current: None,
+            current_pos_data: None,
             result_queue: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
@@ -807,7 +807,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
 
     fn get_linebreak_property(&mut self) -> u8 {
         get_linebreak_property_utf32_with_rule(
-            self.current.unwrap().1,
+            self.current_pos_data.unwrap().1,
             self.break_rule,
             self.word_break_rule,
             self.ja_zh,
@@ -819,7 +819,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     }
 
     fn is_break_by_normal(&mut self) -> bool {
-        is_break_utf32_by_normal(self.current.unwrap().1 as u32, self.ja_zh)
+        is_break_utf32_by_normal(self.current_pos_data.unwrap().1 as u32, self.ja_zh)
     }
 
     #[inline]

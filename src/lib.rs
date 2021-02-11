@@ -1,3 +1,17 @@
+//! A line breaking iterator of [Unicode Standard Annex #14](http://www.unicode.org/reports/tr14/) compatible rules.
+//!
+//! ```rust
+//! extern crate uax14_rs;
+//!
+//! use uax14_rs::LineBreakIterator;
+//!
+//! fn main() {
+//!     let teststr = "Hello World";
+//!     let mut iter = LineBreakIterator::new(teststr);
+//!     println!("First line breaking point is {}", iter.next().unwrap());
+//! }
+//! ```
+
 mod lb_define;
 mod line_breaker;
 mod properties;

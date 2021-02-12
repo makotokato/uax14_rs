@@ -82,6 +82,14 @@ fn wordbreak_breakall() {
     let s = "\u{d55c}\u{ae00}\u{c77e}";
     break_all(s, vec![3, 6, 9], vec![1, 2, 3]);
 
+    // from css/css-text/word-break/word-break-break-all-003.html
+    let s = "ภาษาไทยภาษาไทย";
+    break_all(
+        s,
+        vec![3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42],
+        vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+    );
+
     // from css/css-text/word-break/word-break-break-all-004.html
     let s = "التدويل نشاط التدويل";
     break_all(

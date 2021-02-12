@@ -360,7 +360,8 @@ macro_rules! break_iterator_impl {
                     };
 
                     // UAX14 doesn't have Thai etc, so use another way.
-                    if $name::use_complex_breaking(left_codepoint.unwrap().1)
+                    if left_prop == SA
+                        && $name::use_complex_breaking(left_codepoint.unwrap().1)
                         && $name::use_complex_breaking(self.current_pos_data.unwrap().1)
                     {
                         let result = self.handle_complex_language(left_codepoint.unwrap().1);

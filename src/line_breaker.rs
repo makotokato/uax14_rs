@@ -625,6 +625,7 @@ impl<'a> LineBreakIterator<'a> {
     ) -> Vec<usize> {
         if !self.env.is_null() {
             if let Some(ret) = get_line_break_utf16(self.env, text, length) {
+                ret.push(length);
                 return ret;
             }
         }
@@ -857,6 +858,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     ) -> Vec<usize> {
         if !self.env.is_null() {
             if let Some(ret) = get_line_break_utf16(self.env, text, length) {
+                ret.push(length);
                 return ret;
             }
         }

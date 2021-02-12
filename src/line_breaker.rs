@@ -360,7 +360,7 @@ macro_rules! break_iterator_impl {
                     };
 
                     // UAX14 doesn't have Thai etc, so use another way.
-                    if left_prop == SA
+                    if self.word_break_rule != WordBreakRule::BreakAll
                         && $name::use_complex_breaking(left_codepoint.unwrap().1)
                         && $name::use_complex_breaking(self.current_pos_data.unwrap().1)
                     {

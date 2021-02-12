@@ -154,8 +154,8 @@ fn wordbreak_keepall() {
     keep_all(s, vec![9], vec![3]);
 
     // from css/css-text/word-break/word-break-keep-all-003.html
-    let s = "และ";
-    keep_all(s, vec![9], vec![3]);
+    let s = "และและ";
+    keep_all(s, vec![9, 18], vec![3, 6]);
 
     // from css/css-text/word-break/word-break-keep-all-005.html
     let s = "字\u{3000}字";

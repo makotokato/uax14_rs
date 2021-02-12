@@ -618,7 +618,7 @@ impl<'a> LineBreakIterator<'a> {
         use_complex_breaking_utf32(c as u32)
     }
 
-    #[cfg(target_os = "android")]
+    #[cfg(all(target_os = "android", feature = "platform_fallback"))]
     fn get_line_break_by_platform_fallback(
         &mut self,
         text: *const u16,
@@ -633,7 +633,7 @@ impl<'a> LineBreakIterator<'a> {
         [length].to_vec()
     }
 
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(all(target_os = "android", feature = "platform_fallback")))]
     fn get_line_break_by_platform_fallback(
         &mut self,
         text: *const u16,
@@ -851,7 +851,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
         use_complex_breaking_utf32(c)
     }
 
-    #[cfg(target_os = "android")]
+    #[cfg(all(target_os = "android", feature = "platform_fallback"))]
     fn get_line_break_by_platform_fallback(
         &mut self,
         text: *const u16,
@@ -866,7 +866,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
         [length].to_vec()
     }
 
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(all(target_os = "android", feature = "platform_fallback")))]
     fn get_line_break_by_platform_fallback(
         &mut self,
         text: *const u16,

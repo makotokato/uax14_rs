@@ -12,8 +12,7 @@ use uax14_rs::LineBreakIteratorUTF16;
 #[test]
 fn run_line_break_test() {
     // no failed tests
-    let failed = [
-    ];
+    let failed = [];
 
     let f = File::open("tools/LineBreakTest.txt");
     let f = BufReader::new(f.unwrap());
@@ -38,6 +37,7 @@ fn run_line_break_test() {
         let mut u16_len = 0;
 
         let mut ascii_only = true;
+        let mut has_sa_class = false;
         loop {
             if count >= v.len() {
                 break;
@@ -52,6 +52,12 @@ fn run_line_break_test() {
                 } else {
                     u8_vec.push(ch as u8);
                     u8_len = u8_len + 1;
+                }
+
+                if (ch as u32 >= 0xe01 && ch as u32 <= 0xeff)
+                    || (ch as u32 >= 0x1780 && ch as u32 <= 0x17ff)
+                {
+                    has_sa_class = true
                 }
 
                 if ch as u32 >= 0x10000 {
@@ -82,14 +88,24 @@ fn run_line_break_test() {
         {
             println!("UTF8: {}", line);
             let result: Vec<usize> = iter.map(|x| x).collect();
-            assert_eq!(result, char_break, "{}", line);
+            if !has_sa_class {
+                assert_eq!(result, char_break, "{}", line);
+            } else {
+                #[cfg(feature = "platform_fallback")]
+                assert_eq!(result, char_break, "{}", line);
+            }
         }
 
         {
             println!("UTF16: {}", line);
             let iter = LineBreakIteratorUTF16::new(&u16_vec);
             let result: Vec<usize> = iter.map(|x| x).collect();
-            assert_eq!(result, u16_break, "UTF16: {}", line);
+            if !has_sa_class {
+                assert_eq!(result, u16_break, "UTF16: {}", line);
+            } else {
+                #[cfg(feature = "platform_fallback")]
+                assert_eq!(result, u16_break, "UTF16: {}", line);
+            }
         }
 
         if ascii_only {

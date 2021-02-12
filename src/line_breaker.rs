@@ -1,19 +1,22 @@
 extern crate unicode_width;
 
-#[cfg(target_os = "android")]
+#[cfg(all(target_os = "android", feature = "platform_fallback"))]
 use crate::android::*;
-#[cfg(not(any(
-    target_os = "macos",
-    target_os = "windows",
-    target_os = "linux",
-    target_os = "android"
+#[cfg(not(all(
+    any(
+        target_os = "macos",
+        target_os = "windows",
+        target_os = "linux",
+        target_os = "android"
+    ),
+    feature = "platform_fallback"
 )))]
 use crate::generic::*;
-#[cfg(target_os = "macos")]
+#[cfg(all(target_os = "macos", feature = "platform_fallback"))]
 use crate::macos::*;
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", feature = "platform_fallback"))]
 use crate::pango::*;
-#[cfg(target_os = "windows")]
+#[cfg(all(target_os = "windows", feature = "platform_fallback"))]
 use crate::windows::*;
 
 use crate::lb_define::*;
@@ -634,7 +637,8 @@ impl<'a> LineBreakIterator<'a> {
         text: *const u16,
         length: usize,
     ) -> Vec<usize> {
-        if let Some(ret) = get_line_break_utf16(text, length) {
+        if let Some(mut ret) = get_line_break_utf16(text, length) {
+            ret.push(length);
             return ret;
         }
         [length].to_vec()
@@ -865,7 +869,8 @@ impl<'a> LineBreakIteratorUTF16<'a> {
         text: *const u16,
         length: usize,
     ) -> Vec<usize> {
-        if let Some(ret) = get_line_break_utf16(text, length) {
+        if let Some(mut ret) = get_line_break_utf16(text, length) {
+            ret.push(length);
             return ret;
         }
         [length].to_vec()

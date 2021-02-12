@@ -168,12 +168,15 @@ fn wordbreak_keepall() {
 
 #[test]
 fn wordbreak_normal() {
-    // from css/css-text/word-break/word-break-normal-th-000.html
-    let s = "\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}";
-    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
-    normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
+    #[cfg(feature = "platform_fallback")]
+    {
+        // from css/css-text/word-break/word-break-normal-th-000.html
+        let s = "\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}";
+        #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
+        normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
+    }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(all(target_os = "macos", feature = "platform_fallback"))]
     {
         // from css/css-text/word-break/word-break-normal-km-000.html
         let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
@@ -181,7 +184,7 @@ fn wordbreak_normal() {
         normal(_s, vec![27, 54, 81], vec![9, 18, 27]);
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(all(target_os = "macos", feature = "platform_fallback"))]
     {
         // from css/css-text/word-break/word-break-normal-lo-000.html
         let _s = "ພາສາລາວພາສາລາວພາສາລາວ";

@@ -527,7 +527,7 @@ macro_rules! break_iterator_impl {
                 // Restore iterator to move to head of complex string
                 self.iter = start_iter;
                 self.current_pos_data = start_point;
-                let breaks = self.get_line_break_utf16(s.as_ptr(), s.len())?;
+                let breaks = self.get_line_break_by_platform_fallback(s.as_ptr(), s.len());
                 let mut i = 1;
                 self.result_cache = breaks;
                 // result_cache vector is utf-16 index that is in BMP.
@@ -615,16 +615,29 @@ impl<'a> LineBreakIterator<'a> {
     }
 
     #[cfg(target_os = "android")]
-    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
-        if self.env.is_null() {
-            return None;
+    fn get_line_break_by_platform_fallback(
+        &mut self,
+        text: *const u16,
+        length: usize,
+    ) -> Vec<usize> {
+        if !self.env.is_null() {
+            if let Some(ret) = get_line_break_utf16(self.env, text, length) {
+                return ret;
+            }
         }
-        get_line_break_utf16(self.env, text, length)
+        [length].to_vec()
     }
 
     #[cfg(not(target_os = "android"))]
-    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
-        get_line_break_utf16(text, length)
+    fn get_line_break_by_platform_fallback(
+        &mut self,
+        text: *const u16,
+        length: usize,
+    ) -> Vec<usize> {
+        if let Some(ret) = get_line_break_utf16(text, length) {
+            return ret;
+        }
+        [length].to_vec()
     }
 
     /// Set JNI env for Android
@@ -720,8 +733,12 @@ impl<'a> LineBreakIteratorLatin1<'a> {
         false
     }
 
-    fn get_line_break_utf16(&mut self, _text: *const u16, _length: usize) -> Option<Vec<usize>> {
-        None
+    fn get_line_break_by_platform_fallback(
+        &mut self,
+        _text: *const u16,
+        _length: usize,
+    ) -> Vec<usize> {
+        panic!("not reachable");
     }
 }
 
@@ -829,16 +846,29 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     }
 
     #[cfg(target_os = "android")]
-    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
-        if self.env.is_null() {
-            return None;
+    fn get_line_break_by_platform_fallback(
+        &mut self,
+        text: *const u16,
+        length: usize,
+    ) -> Vec<usize> {
+        if !self.env.is_null() {
+            if let Some(ret) = get_line_break_utf16(self.env, text, length) {
+                return ret;
+            }
         }
-        get_line_break_utf16(self.env, text, length)
+        [length].to_vec()
     }
 
     #[cfg(not(target_os = "android"))]
-    fn get_line_break_utf16(&mut self, text: *const u16, length: usize) -> Option<Vec<usize>> {
-        get_line_break_utf16(text, length)
+    fn get_line_break_by_platform_fallback(
+        &mut self,
+        text: *const u16,
+        length: usize,
+    ) -> Vec<usize> {
+        if let Some(ret) = get_line_break_utf16(text, length) {
+            return ret;
+        }
+        [length].to_vec()
     }
 
     /// Set JNI env for Android

@@ -178,7 +178,7 @@ fn wordbreak_normal() {
         // from css/css-text/word-break/word-break-normal-km-000.html
         let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
         #[cfg(target_os = "macos")]
-        normal(_s, vec![27, 54, 60, 66, 81], vec![9, 18, 20, 22, 27]);
+        normal(_s, vec![27, 54, 81], vec![9, 18, 27]);
     }
 
     #[cfg(target_os = "macos")]

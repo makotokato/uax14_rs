@@ -14,7 +14,10 @@
 
 mod lb_define;
 mod line_breaker;
-mod properties;
+mod properties_defines;
+mod properties_other;
+mod property_table;
+mod rule_table;
 
 // platform specific breaker
 #[cfg(all(target_os = "android", feature = "platform_fallback"))]

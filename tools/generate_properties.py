@@ -397,67 +397,73 @@ with open('lb_define.rs', 'w') as prop_file:
     prop_file.write("pub const KEEP_RULE: i8 = -1;\n")
     prop_file.write("\n")
 
-print("use crate::lb_define::*;")
-print()
+with open('properties_defines.rs', 'w') as properties_file:
+    properties_file.write("use crate::lb_define::*;\n\n")
 
-for a in range(128):
-    first_value = prop[a * 1024]
-    generate_table = False
-    for i in range(1024):
-        if prop[a * 1024 + i] != first_value:
-            generate_table = True
-            break
+    for a in range(128):
+        first_value = prop[a * 1024]
+        generate_table = False
+        for i in range(1024):
+            if prop[a * 1024 + i] != first_value:
+                generate_table = True
+                break
 
-    if not generate_table:
-        table.append("UAX14_PROPERTIES_%s" % first_value)
-        continue
+        if not generate_table:
+            table.append("UAX14_PROPERTIES_%s" % first_value)
+            continue
 
-    print("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % str(a))
-    for i in range(int(1024)):
-        print(" %s," % prop[a * 1024 + i], end="")
-    print("];")
-    table.append("UAX14_PROPERTIES_%s" % str(a))
-    print()
+        properties_file.write("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [\n" % str(a))
+        for i in range(int(1024)):
+            properties_file.write(" %s," % prop[a * 1024 + i])
+        properties_file.write("];\n\n")
 
-for t in ["ID", "SG", "XX"]:
-    print("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [" % t)
-    for i in range(int(1024 / 16)):
-        print(" ", end="")
-        for j in range(16):
-            print(" %s," % t, end="")
-        print()
-    print("];")
-    print()
+        table.append("UAX14_PROPERTIES_%s" % str(a))
 
-print("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [")
-for i in table:
-    print("  &%s," % i)
-print("];")
-print()
+with open('properties_other.rs', 'w') as properties_file:
+    properties_file.write("use crate::lb_define::*;\n\n")
 
-print("pub const UAX14_RULE_TABLE: [i8; %d] = [" % len(rule))
-count = 0
-line = 0
-print("// %s" % prop_type[line])
-for i in rule:
-    value = 0
-    # handing state machine
-    if i == "x":
-        value = -1
-    elif i == "/":
-        value = -128
-    elif i == "!":
-        value = -128
-    else:
-        value = "%s as i8" % i
-    print(" %s," % str(value), end="")
-    count = count + 1
-    if count >= len(prop_type):
-        print()
-        count = 0
-        line = line + 1
-        try:
-            print("// %s" % prop_type[line])
-        except:
-            pass
-print("];")
+    for t in ["ID", "SG", "XX"]:
+        properties_file.write("pub const UAX14_PROPERTIES_%s: [u8; 1024] = [\n" % t)
+        for i in range(int(1024 / 16)):
+            properties_file.write(" ")
+            for j in range(16):
+                properties_file.write(" %s," % t)
+            properties_file.write("\n");
+        properties_file.write("];\n\n");
+
+with open('property_table.rs', 'w') as table_file:
+    table_file.write("use crate::properties_defines::*;\n");
+    table_file.write("use crate::properties_other::*;\n\n");
+
+    table_file.write("pub const UAX14_PROPERTY_TABLE: [&[u8; 1024]; 128] = [\n")
+    for i in table:
+        table_file.write("  &%s,\n" % i)
+    table_file.write("];\n")
+
+with open('rule_table.rs', 'w') as table_file:
+    table_file.write("use crate::lb_define::*;\n\n")
+    table_file.write("pub const UAX14_RULE_TABLE: [i8; %d] = [\n" % len(rule))
+    count = 0
+    line = 0
+    table_file.write("// %s\n" % prop_type[line])
+    for i in rule:
+        value = 0
+        # handing state machine
+        if i == "x":
+            value = -1
+        elif i == "/":
+            value = -128
+        elif i == "!":
+            value = -128
+        else:
+            value = "%s as i8" % i
+        table_file.write(" %s," % str(value))
+        count = count + 1
+        if count >= len(prop_type):
+            count = 0
+            line = line + 1
+            try:
+                table_file.write("\n// %s\n" % prop_type[line])
+            except:
+                pass
+    table_file.write("];\n")

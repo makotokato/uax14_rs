@@ -20,7 +20,8 @@ use crate::pango::*;
 use crate::windows::*;
 
 use crate::lb_define::*;
-use crate::properties::*;
+use crate::property_table::*;
+use crate::rule_table::*;
 
 use core::char;
 use core::str::CharIndices;

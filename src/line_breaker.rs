@@ -229,13 +229,13 @@ fn get_break_state(left: u8, right: u8) -> i8 {
 #[inline]
 fn use_complex_breaking_utf32(codepoint: u32) -> bool {
     // Thai
-    codepoint >= 0xe00 && codepoint <= 0xe7f
+    codepoint >= 0xe01 && codepoint <= 0xe7f
 }
 #[cfg(any(target_os = "macos", target_os = "android"))]
 #[inline]
 fn use_complex_breaking_utf32(codepoint: u32) -> bool {
     // Thai, Lao and Khmer
-    (codepoint >= 0xe00 && codepoint <= 0xeff) || (codepoint >= 0x1780 && codepoint <= 0x17ff)
+    (codepoint >= 0xe01 && codepoint <= 0xeff) || (codepoint >= 0x1780 && codepoint <= 0x17ff)
 }
 
 macro_rules! break_iterator_impl {
@@ -245,7 +245,7 @@ macro_rules! break_iterator_impl {
             iter: $iter_attr,
             len: usize,
             current_pos_data: Option<(usize, $char_type)>,
-            result_queue: Vec<usize>,
+            result_cache: Vec<usize>,
             break_rule: LineBreakRule,
             word_break_rule: WordBreakRule,
             ja_zh: bool,
@@ -261,19 +261,19 @@ macro_rules! break_iterator_impl {
                     return None;
                 }
 
-                if !self.result_queue.is_empty() {
+                if !self.result_cache.is_empty() {
                     // We have break point cache by previous run.
                     let mut i = 0;
                     loop {
-                        if i == *self.result_queue.first().unwrap() {
-                            self.result_queue.remove(0);
-                            self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
+                        if i == *self.result_cache.first().unwrap() {
+                            self.result_cache.remove(0);
+                            self.result_cache = self.result_cache.iter().map(|r| r - i).collect();
                             return Some(self.current_pos_data.unwrap().0);
                         }
                         self.current_pos_data = self.iter.next();
                         if self.current_pos_data.is_none() {
                             // Reach EOF
-                            self.result_queue.clear();
+                            self.result_cache.clear();
                             return Some(self.len);
                         }
                         i += 1;
@@ -529,16 +529,17 @@ macro_rules! break_iterator_impl {
                 self.current_pos_data = start_point;
                 let breaks = self.get_line_break_utf16(s.as_ptr(), s.len())?;
                 let mut i = 1;
-                self.result_queue = breaks;
-                // result_queue vector is utf-16 index that is in BMP.
+                self.result_cache = breaks;
+                // result_cache vector is utf-16 index that is in BMP.
                 loop {
-                    if i == *self.result_queue.first().unwrap() {
-                        self.result_queue.remove(0);
-                        self.result_queue = self.result_queue.iter().map(|r| r - i).collect();
+                    if i == *self.result_cache.first().unwrap() {
+                        self.result_cache.remove(0);
+                        self.result_cache = self.result_cache.iter().map(|r| r - i).collect();
                         return Some(self.current_pos_data.unwrap().0);
                     }
                     self.current_pos_data = self.iter.next();
                     if self.current_pos_data.is_none() {
+                        self.result_cache.clear();
                         return Some(self.len);
                     }
                     i += 1;
@@ -557,7 +558,7 @@ impl<'a> LineBreakIterator<'a> {
             iter: input.char_indices(),
             len: input.len(),
             current_pos_data: None,
-            result_queue: Vec::new(),
+            result_cache: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
@@ -577,7 +578,7 @@ impl<'a> LineBreakIterator<'a> {
             iter: input.char_indices(),
             len: input.len(),
             current_pos_data: None,
-            result_queue: Vec::new(),
+            result_cache: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
@@ -668,7 +669,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
             },
             len: input.len(),
             current_pos_data: None,
-            result_queue: Vec::new(),
+            result_cache: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
@@ -691,7 +692,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
             },
             len: input.len(),
             current_pos_data: None,
-            result_queue: Vec::new(),
+            result_cache: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,
@@ -773,7 +774,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
             },
             len: input.len(),
             current_pos_data: None,
-            result_queue: Vec::new(),
+            result_cache: Vec::new(),
             break_rule: LineBreakRule::Strict,
             word_break_rule: WordBreakRule::Normal,
             ja_zh: false,
@@ -796,7 +797,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
             },
             len: input.len(),
             current_pos_data: None,
-            result_queue: Vec::new(),
+            result_cache: Vec::new(),
             break_rule: line_break_rule,
             word_break_rule: word_break_rule,
             ja_zh: ja_zh,

@@ -87,7 +87,7 @@ mod tests {
     fn macos_line_break() {
         let text: [u16; 5] = [0x42, 0x42, 0x42, 0x20, 0x42];
         let breaks = get_line_break_utf16(text.as_ptr(), text.len());
-        assert_eq!(breaks.unwrap(), [4], "ASCII and SP");
+        assert_eq!(breaks.unwrap(), [4], "AL and SP");
 
         let text: [u16; 14] = [
             0x0e20, 0x0e32, 0x0e29, 0x0e32, 0x0e44, 0x0e17, 0x0e22, 0x0e20, 0x0e32, 0x0e29, 0x0e32,
@@ -102,7 +102,7 @@ mod tests {
 
         let text: [u16; 7] = [0x0e01, 0x0e23, 0x0e380, 0x0e07, 0x0e40, 0x0e17, 0x0e1e];
         let breaks = get_line_break_utf16(text.as_ptr(), text.len());
-        assert_eq!(breaks, None, "Thai test");
+        assert_eq!(breaks, None, "Thai test without break");
 
         let text: [u16; 27] = [
             0x1797, 0x17b6, 0x179f, 0x17b6, 0x1781, 0x17d2, 0x1798, 0x17c2, 0x179a, 0x1797, 0x17b6,

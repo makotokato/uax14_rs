@@ -633,7 +633,7 @@ impl<'a> LineBreakIterator<'a> {
         length: usize,
     ) -> Vec<usize> {
         if !self.env.is_null() {
-            if let Some(ret) = get_line_break_utf16(self.env, text, length) {
+            if let Some(mut ret) = get_line_break_utf16(self.env, text, length) {
                 ret.push(length);
                 return ret;
             }

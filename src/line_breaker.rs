@@ -32,16 +32,23 @@ use std::ffi::c_void;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum LineBreakRule {
+    /// Use `line-break: normal;` line break rule
     Normal,
+    /// Use `line-break: strict;` line break rule
     Strict,
+    /// Use `line-break: loose;` line break rule
     Loose,
+    /// Use `line-break: anywhere;` line break rule
     Anywhere,
 }
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum WordBreakRule {
+    /// Use `word-break: normal;` line break rule
     Normal,
+    /// Use `word-break: break-all;` line break rule
     BreakAll,
+    /// Use `word-break: keep-all;` line break rule
     KeepAll,
 }
 
@@ -654,8 +661,7 @@ impl<'a> LineBreakIterator<'a> {
     }
 }
 
-// Latin1 version of line break iterator for FFI
-
+/// Latin-1 version of line break iterator.
 #[derive(Clone)]
 struct Latin1Indices<'a> {
     front_offset: usize,
@@ -680,7 +686,7 @@ impl<'a> Iterator for Latin1Indices<'a> {
 break_iterator_impl!(LineBreakIteratorLatin1, Latin1Indices<'a>, u8);
 
 impl<'a> LineBreakIteratorLatin1<'a> {
-    /// Create line break iterator
+    /// Create line break iterator using Latin-1/8-bit string.
     pub fn new(input: &[u8]) -> LineBreakIteratorLatin1 {
         LineBreakIteratorLatin1 {
             iter: Latin1Indices {
@@ -698,7 +704,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
         }
     }
 
-    /// Create line break iterator with CSS rules
+    /// Create line break iterator with CSS rules using Latin-1/8-bit string.
     pub fn new_with_break_rule(
         input: &[u8],
         line_break_rule: LineBreakRule,
@@ -749,8 +755,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
     }
 }
 
-// UTF16
-
+/// UTF-16 version of line break iterator.
 #[derive(Clone)]
 struct UTF16Indices<'a> {
     front_offset: usize,
@@ -789,7 +794,7 @@ impl<'a> Iterator for UTF16Indices<'a> {
 break_iterator_impl!(LineBreakIteratorUTF16, UTF16Indices<'a>, u32);
 
 impl<'a> LineBreakIteratorUTF16<'a> {
-    /// Create line break iterator
+    /// Create line break iterator using UTF-16 string.
     pub fn new(input: &[u16]) -> LineBreakIteratorUTF16 {
         LineBreakIteratorUTF16 {
             iter: UTF16Indices {
@@ -807,7 +812,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
         }
     }
 
-    /// Create line break iterator with CSS rules
+    /// Create line break iterator with CSS rules using UTF-16 string.
     pub fn new_with_break_rule(
         input: &[u16],
         line_break_rule: LineBreakRule,

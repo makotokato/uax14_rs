@@ -38,4 +38,3 @@ jobs:
       run: |
         curl https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/LineBreakTest.txt -o tools/LineBreakTest.txt
         cargo test --verbose --features platform_fallback
-      if: matrix.target != "x86_64-linux-android"

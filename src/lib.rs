@@ -19,6 +19,9 @@ mod properties_other;
 mod property_table;
 mod rule_table;
 
+#[macro_use]
+extern crate lazy_static;
+
 // platform specific breaker
 #[cfg(all(target_os = "android", feature = "platform_fallback"))]
 mod android;

@@ -54,6 +54,8 @@ pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize
 }
 
 mod tests {
+    use crate::lstm::get_line_break_utf16;
+
     #[test]
     fn macos_line_break() {
         let text: [u16; 14] = [

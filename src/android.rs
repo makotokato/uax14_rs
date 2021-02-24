@@ -7,8 +7,7 @@ use std::ffi::c_void;
 
 pub fn get_line_break_utf16(
     jni_env: *mut c_void,
-    text: *const u16,
-    length: usize,
+    input: &[u16],
 ) -> Option<Vec<usize>> {
     let env = unsafe { JNIEnv::from_raw(jni_env as *mut sys::JNIEnv).ok()? };
 
@@ -27,8 +26,7 @@ pub fn get_line_break_utf16(
         .ok()?,
     );
 
-    let slice = unsafe { std::slice::from_raw_parts(text, length) };
-    let s: String = decode_utf16(slice.iter().cloned())
+    let s: String = decode_utf16(input.iter().cloned())
         .map(|r| r.unwrap())
         .collect();
 
@@ -51,7 +49,7 @@ pub fn get_line_break_utf16(
             .ok()?
             .i()
             .ok()?;
-        if location < 0 || length <= location as usize {
+        if location < 0 || input.len() <= location as usize {
             break;
         }
         breaks.push(location as usize);

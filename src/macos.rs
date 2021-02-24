@@ -34,19 +34,19 @@ extern "C" {
     fn CFStringTokenizerGetCurrentTokenRange(tokenizer: CFStringTokenizerRef) -> CFRange;
 }
 
-pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
+pub fn get_line_break_utf16(input: &[u16]) -> Option<Vec<usize>> {
     let mut breaks = Vec::new();
     let os_str = unsafe {
         CFStringCreateWithCharactersNoCopy(
             kCFAllocatorDefault,
-            text,
-            length as CFIndex,
+            input.as_ptr(),
+            input.len() as CFIndex,
             kCFAllocatorNull,
         )
     };
     let range: CFRange = CFRange {
         location: 0,
-        length: length as isize,
+        length: input.len() as isize,
     };
     let token = unsafe {
         CFStringTokenizerCreate(
@@ -86,22 +86,22 @@ mod tests {
     #[test]
     fn macos_line_break() {
         let text: [u16; 5] = [0x42, 0x42, 0x42, 0x20, 0x42];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks.unwrap(), [4], "AL and SP");
 
         let text: [u16; 14] = [
             0x0e20, 0x0e32, 0x0e29, 0x0e32, 0x0e44, 0x0e17, 0x0e22, 0x0e20, 0x0e32, 0x0e29, 0x0e32,
             0x0e44, 0x0e17, 0x0e22,
         ];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks.unwrap(), [4, 7, 11], "Thai test");
 
         let text: [u16; 4] = [0x0e20, 0x0e32, 0x0e29, 0x0e32];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks, None, "Thai test");
 
         let text: [u16; 7] = [0x0e01, 0x0e23, 0x0e380, 0x0e07, 0x0e40, 0x0e17, 0x0e1e];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks, None, "Thai test without break");
 
         let text: [u16; 27] = [
@@ -109,7 +109,7 @@ mod tests {
             0x179f, 0x17b6, 0x1781, 0x17d2, 0x1798, 0x17c2, 0x179a, 0x1797, 0x17b6, 0x179f, 0x17b6,
             0x1781, 0x17d2, 0x1798, 0x17c2, 0x179a,
         ];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks.unwrap(), [9, 18], "Khmer test");
     }
 }

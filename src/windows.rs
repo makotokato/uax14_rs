@@ -2,17 +2,17 @@ use std::ptr;
 
 use winapi::um::usp10::*;
 
-pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize>> {
+pub fn get_line_break_utf16(input: &[u16]) -> Option<Vec<usize>> {
     let mut breaks = Vec::new();
 
-    let mut item_buffer = Vec::with_capacity(length + 1);
-    let mut out_len = length as i32;
+    let mut item_buffer = Vec::with_capacity(input.len() + 1);
+    let mut out_len = input.len() as i32;
 
     let hresult = unsafe {
         ScriptItemize(
-            text,
-            length as i32,
-            length as i32,
+            input.as_ptr(),
+            input.len() as i32,
+            input.len() as i32,
             ptr::null(),
             ptr::null(),
             item_buffer.as_mut_ptr(),
@@ -26,7 +26,6 @@ pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize
         return None;
     }
 
-    let slice = unsafe { std::slice::from_raw_parts(text, length) };
     let items = unsafe { std::slice::from_raw_parts(item_buffer.as_ptr(), out_len as usize) };
     let mut item_index = 0;
     loop {
@@ -34,14 +33,14 @@ pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize
             break;
         }
         let start_offset = items[item_index].iCharPos as usize;
-        let mut new_len = length - start_offset;
+        let mut new_len = input.len() - start_offset;
         if item_index + 1 < out_len as usize {
             new_len = (items[item_index + 1].iCharPos - items[item_index].iCharPos) as usize;
         }
         let mut attr_buffer = Vec::with_capacity(new_len);
         let hresult = unsafe {
             ScriptBreak(
-                &slice[start_offset],
+                &input[start_offset],
                 new_len as i32,
                 &items[item_index].a,
                 attr_buffer.as_mut_ptr(),
@@ -82,18 +81,18 @@ mod tests {
     #[test]
     fn macos_line_break() {
         let text: [u16; 5] = [0x42, 0x42, 0x42, 0x20, 0x42];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks.unwrap(), [4], "AL and SP");
 
         let text: [u16; 14] = [
             0x0e20, 0x0e32, 0x0e29, 0x0e32, 0x0e44, 0x0e17, 0x0e22, 0x0e20, 0x0e32, 0x0e29, 0x0e32,
             0x0e44, 0x0e17, 0x0e22,
         ];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks.unwrap(), [4, 7, 11], "Thai test");
 
         let text: [u16; 4] = [0x0e20, 0x0e32, 0x0e29, 0x0e32];
-        let breaks = get_line_break_utf16(text.as_ptr(), text.len());
+        let breaks = get_line_break_utf16(&text);
         assert_eq!(breaks, None, "Thai test without break");
     }
 }

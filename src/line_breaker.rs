@@ -11,7 +11,7 @@ use crate::android::*;
     ),
     feature = "platform_fallback"
 )))]
-use crate::generic::*;
+use crate::lstm::*;
 #[cfg(all(target_os = "macos", feature = "platform_fallback"))]
 use crate::macos::*;
 #[cfg(all(target_os = "linux", feature = "platform_fallback"))]

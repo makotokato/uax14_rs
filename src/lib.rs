@@ -34,7 +34,7 @@ mod android;
     ),
     feature = "platform_fallback"
 )))]
-mod generic;
+mod lstm;
 #[cfg(all(target_os = "macos", feature = "platform_fallback"))]
 mod macos;
 #[cfg(all(target_os = "linux", feature = "platform_fallback"))]

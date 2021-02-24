@@ -45,7 +45,7 @@ pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize
     let s: String = decode_utf16(slice.iter().cloned())
         .map(|r| r.unwrap())
         .collect();
-    let mut iter = LstmSegmenterIterator::new(&*THAI_LSTM, &s);
+    let iter = LstmSegmenterIterator::new(&*THAI_LSTM, &s);
     let result: Vec<usize> = iter.map(|i| i).collect();
     if result.is_empty() {
         return None;
@@ -54,8 +54,6 @@ pub fn get_line_break_utf16(text: *const u16, length: usize) -> Option<Vec<usize
 }
 
 mod tests {
-    use crate::generic::get_line_break_utf16;
-
     #[test]
     fn macos_line_break() {
         let text: [u16; 14] = [

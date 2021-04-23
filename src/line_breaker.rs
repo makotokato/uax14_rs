@@ -192,8 +192,8 @@ fn is_break_utf32_by_loose(
 }
 
 #[inline]
-fn is_break(left: u8, right: u8) -> bool {
-    let rule = UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1];
+fn is_break_from_table(rule_table: &[i8], property_count: usize, left: u8, right: u8) -> bool {
+    let rule = rule_table[((left as usize) - 1) * property_count + (right as usize) - 1];
     if rule == KEEP_RULE {
         return false;
     }
@@ -375,7 +375,7 @@ macro_rules! break_iterator_impl {
                             if self.current_pos_data.is_none() {
                                 // Reached EOF. But we are analyzing multiple characters now, so next break may be previous point.
                                 let break_state = get_break_state(break_state as u8, EOT);
-                                if break_state == -2 {
+                                if break_state == PREVIOUS_BREAK_RULE {
                                     self.iter = previous_iter;
                                     self.current_pos_data = previous_pos_data;
                                     return Some(previous_pos_data.unwrap().0);
@@ -396,7 +396,7 @@ macro_rules! break_iterator_impl {
                         if break_state == KEEP_RULE {
                             continue;
                         }
-                        if break_state == -2 {
+                        if break_state == PREVIOUS_BREAK_RULE {
                             self.iter = previous_iter;
                             self.current_pos_data = previous_pos_data;
                             return Some(previous_pos_data.unwrap().0);
@@ -404,7 +404,7 @@ macro_rules! break_iterator_impl {
                         return Some(self.current_pos_data.unwrap().0);
                     }
 
-                    if is_break(left_prop, right_prop) {
+                    if is_break_from_table(&UAX14_RULE_TABLE, PROP_COUNT, left_prop, right_prop) {
                         return Some(self.current_pos_data.unwrap().0);
                     }
                 }
@@ -801,7 +801,8 @@ impl<'a> LineBreakIteratorUTF16<'a> {
 mod tests {
     use crate::lb_define::*;
     use crate::line_breaker::get_linebreak_property_with_rule;
-    use crate::line_breaker::is_break;
+    use crate::line_breaker::is_break_from_table;
+    use crate::rule_table::*;
     use crate::LineBreakRule;
     use crate::WordBreakRule;
 
@@ -830,6 +831,10 @@ mod tests {
         assert_eq!(get_linebreak_property('\u{50005}'), XX);
         assert_eq!(get_linebreak_property('\u{17D6}'), NS);
         assert_eq!(get_linebreak_property('\u{2014}'), B2);
+    }
+
+    fn is_break(left: u8, right: u8) -> bool {
+        is_break_from_table(&UAX14_RULE_TABLE, PROP_COUNT, left, right)
     }
 
     #[test]

@@ -76,8 +76,15 @@ prop_type = sorted([x for x in set(prop)])
 prop_type.append("B2_SP")
 prop_type.append("CL_CP_SP")
 prop_type.append("HL_HY")
+prop_type.append("LB25_HY")
+prop_type.append("LB25_OP")
+prop_type.append("LB25_NU_IS")
+prop_type.append("LB25_NU_SY")
+prop_type.append("LB25_NU_CL")
+prop_type.append("LB25_NU_CP")
 prop_type.append("QU_SP")
 prop_type.append("RI_RI")
+prop_type.append("EOT")
 for i in prop_type:
     back_i = i
     for j in prop_type:
@@ -109,6 +116,13 @@ for i in prop_type:
 
         # LB2
         # LB3
+        if j == "EOT":
+            if i in ("LB25_OP", "LB25_HY"):
+                rule.append("f") # failed. Previous is break.
+                continue
+            rule.append("!")
+            continue
+
         # LB4
         if i == "BK":
             rule.append("!")
@@ -165,12 +179,8 @@ for i in prop_type:
             continue
 
         # LB9
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP",
-                     "CL_CP_SP") and j == "CM":
-            rule.append(i)
-            continue
-        if i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP",
-                     "CL_CP_SP") and j == "ZWJ":
+        if (i not in ("BK", "CR", "LF", "NL", "SP", "ZW", "B2_SP", "QU_SP",
+                     "CL_CP_SP")) and j in ("CM", "ZWJ"):
             rule.append(i)
             continue
 
@@ -196,13 +206,18 @@ for i in prop_type:
             continue
 
         # LB12a
-        if i not in ("SP", "BA", "HY", "B2_SP", "QU_SP",
-                     "CL_CP_SP") and j == "GL":
+        if j == "GL":
+            if i in ("B2_SP", "CL_CP_SP", "QU_SP", "SP", "BA", "HY"):
+                rule.append("/")
+                continue
             rule.append("x")
             continue
 
         # LB13
-        if j in ("CL", "CP", "CP_EA", "EX", "IS", "SY"):
+        if i in ("NU", "LB25_NU_SY", "LB25_NU_IS") and j in ("IS", "SY", "CL", "CP", "CP_EA"):
+            # LB25 rule.
+            pass
+        elif j in ("CL", "CP", "CP_EA", "EX", "IS", "SY"):
             rule.append("x")
             continue
 
@@ -219,7 +234,7 @@ for i in prop_type:
             i = "SP"
 
         # LB 16
-        if i in ("CL", "CP", "CP_EA", "CL_CP_SP") and j == "NS":
+        if i in ("CL", "CP", "CP_EA", "CL_CP_SP", "LB25_NU_CL", "LB25_NU_CP") and j == "NS":
             rule.append("x")
             continue
         if i == "CL_CP_SP":
@@ -305,24 +320,48 @@ for i in prop_type:
             continue
 
         # LB25
-        if i == "NU" and j == "PO":
+        # (PR|PO) ? (OP|HY) ? NU (NU|SY|IS) * (CL|CP) ? (PR|PO) ?
+        if i in ("PR", "PO") and j in ("OP_OP30", "OP_EA"):
+            rule.append("LB25_OP")
+            continue
+        if i in ("PR", "PO") and j in ("HY"):
+            rule.append("LB25_HY")
+            continue
+        if i in ("PR", "PO", "OP_OP30", "OP_EA", "HY", "LB25_OP", "LB25_HY") and j in ("NU"):
             rule.append("x")
             continue
-        if i == "NU" and j == "PR":
+        if i in ("NU", "LB25_NU_IS", "LB25_NU_SY") and j == "NU":
+            rule.append("NU")
+            continue
+        if i in ("NU", "LB25_NU_IS", "LB25_NU_SY") and j == "SY":
+            rule.append("LB25_NU_SY")
+            continue
+        if i in ("NU", "LB25_NU_IS", "LB25_NU_SY") and j == "IS":
+            rule.append("LB25_NU_IS")
+            continue
+        if i in ("NU", "LB25_NU_IS", "LB25_NU_SY") and j in ("CL"):
+            rule.append("LB25_NU_CL")
+            continue
+        if i in ("NU", "LB25_NU_IS", "LB25_NU_SY") and j in ("CP"):
+            rule.append("LB25_NU_CP")
+            continue
+        if i in ("NU", "LB25_NU_IS", "LB25_NU_SY", "LB25_NU_CL", "LB25_NU_CP") and j in ("PR", "PO"):
             rule.append("x")
             continue
-        if i == "PO" and j == "NU":
-            rule.append("x")
+
+        # Restore
+        if i in ("LB25_OP", "LB25_HY"):
+            rule.append("f") # failed. Previous is break
             continue
-        if i == "PR" and j == "NU":
-            rule.append("x")
-            continue
-        if i == "HY" and j == "NU":
-            rule.append("x")
-            continue
-        if i == "NU" and j == "NU":
-            rule.append("x")
-            continue
+
+        if i == "LB25_NU_IS":
+            i = "IS"
+        elif i == "LB25_NU_SY":
+            i = "SY"
+        elif i == "LB25_NU_CL":
+            i = "CL"
+        elif i == "LB25_NU_CP":
+            i = "CP"
 
         # LB26
         if i == "JL" and j in ("JL", "JV", "H2", "H3"):
@@ -352,7 +391,7 @@ for i in prop_type:
             continue
 
         # LB29
-        if i == "IS" and j in ("AL", "HL"):
+        if i in ("IS") and j in ("AL", "HL"):
             rule.append("x")
             continue
 
@@ -394,6 +433,7 @@ with open('lb_define.rs', 'w') as prop_file:
 
     prop_file.write("#[allow(dead_code)]\n")
     prop_file.write("pub const BREAK_RULE: i8 = -128;\n")
+    prop_file.write("pub const PREVIOUS_BREAK_RULE: i8 = -2;\n")
     prop_file.write("pub const KEEP_RULE: i8 = -1;\n")
     prop_file.write("\n")
 
@@ -451,6 +491,8 @@ with open('rule_table.rs', 'w') as table_file:
         # handing state machine
         if i == "x":
             value = -1
+        elif i == "f":
+            value = -2
         elif i == "/":
             value = -128
         elif i == "!":

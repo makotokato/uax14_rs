@@ -232,8 +232,13 @@ fn is_non_break_by_keepall(left: u8, right: u8) -> bool {
 }
 
 #[inline]
+fn get_break_state_from_table(rule_table: &[i8], property_count: usize, left: u8, right: u8) -> i8 {
+    rule_table[((left as usize) - 1) * property_count + (right as usize) - 1]
+}
+
+#[inline]
 fn get_break_state(left: u8, right: u8) -> i8 {
-    UAX14_RULE_TABLE[((left as usize) - 1) * PROP_COUNT + (right as usize) - 1]
+    get_break_state_from_table(&UAX14_RULE_TABLE, PROP_COUNT, left, right)
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "android")))]
@@ -293,27 +298,6 @@ macro_rules! break_iterator_impl {
 
                 loop {
                     let mut left_prop = self.get_linebreak_property();
-                    // Handle LB25
-                    // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
-                    if self.word_break_rule != WordBreakRule::BreakAll
-                        && self.word_break_rule != WordBreakRule::KeepAll
-                        && (left_prop == PR
-                            || left_prop == PO
-                            || left_prop == OP_OP30
-                            || left_prop == OP_EA
-                            || left_prop == HY
-                            || left_prop == NU)
-                    {
-                        let r = self.handle_lb25();
-                        if r.is_some() && r.unwrap() > 0 {
-                            // Most is EOF. if r == 0, this isn't LB25 rule.
-                            return r;
-                        }
-
-                        // left_prop may be invalid, get it now.
-                        left_prop = self.get_linebreak_property();
-                    }
-
                     let left_codepoint = self.current_pos_data;
                     self.current_pos_data = self.iter.next();
                     if self.current_pos_data.is_none() {
@@ -383,9 +367,19 @@ macro_rules! break_iterator_impl {
                     // If break_state is equals or grater than 0, it is alias of property.
                     let mut break_state = get_break_state(left_prop, right_prop);
                     if break_state >= 0 as i8 {
+                        let mut previous_iter = self.iter.clone();
+                        let mut previous_pos_data = self.current_pos_data;
+
                         loop {
                             self.current_pos_data = self.iter.next();
                             if self.current_pos_data.is_none() {
+                                // Reached EOF. But we are analyzing multiple characters now, so next break may be previous point.
+                                let break_state = get_break_state(break_state as u8, EOT);
+                                if break_state == -2 {
+                                    self.iter = previous_iter;
+                                    self.current_pos_data = previous_pos_data;
+                                    return Some(previous_pos_data.unwrap().0);
+                                }
                                 // EOF
                                 return Some(self.len);
                             }
@@ -395,9 +389,17 @@ macro_rules! break_iterator_impl {
                             if break_state < 0 {
                                 break;
                             }
+
+                            previous_iter = self.iter.clone();
+                            previous_pos_data = self.current_pos_data;
                         }
                         if break_state == KEEP_RULE {
                             continue;
+                        }
+                        if break_state == -2 {
+                            self.iter = previous_iter;
+                            self.current_pos_data = previous_pos_data;
+                            return Some(previous_pos_data.unwrap().0);
                         }
                         return Some(self.current_pos_data.unwrap().0);
                     }
@@ -419,104 +421,6 @@ macro_rules! break_iterator_impl {
                     }
                 }
                 return false;
-            }
-
-            fn handle_lb25(&mut self) -> Option<usize> {
-                // Handle LB25
-                // ( PR | PO) ? ( OP | HY ) ? NU (NU | SY | IS) * (CL | CP) ? ( PR | PO) ?
-                let mut old_iter = self.iter.clone();
-                let mut current = self.current_pos_data;
-                let mut state = self.get_linebreak_property();
-
-                if state == PR || state == PO {
-                    let left = current;
-                    let left_prop = state;
-
-                    current = self.iter.next();
-                    if current.is_some() {
-                        state = self.get_linebreak_property_with_rule(current.unwrap().1);
-
-                        // If left is PR, it might apply loose rule.
-                        if self.break_rule == LineBreakRule::Loose {
-                            if let Some(_breakable) = is_break_utf32_by_loose(
-                                left.unwrap().1 as u32,
-                                current.unwrap().1 as u32,
-                                left_prop,
-                                state,
-                                self.ja_zh,
-                            ) {
-                                // reset state since this cannot apply LB25.
-                                state = 0;
-                            }
-                        }
-                    }
-                    // If reaching EOF, restore iterator
-                }
-
-                if state == OP_OP30 || state == HY || state == OP_EA {
-                    current = self.iter.next();
-                    if current.is_some() {
-                        state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                    }
-                    // If reaching EOF, restore iterator
-                }
-
-                if current.is_none() || state != NU {
-                    // Not match for LB25 due to EOF. Restore before parsing.
-                    self.iter = old_iter;
-                    return Some(0);
-                }
-
-                // This should apply LB25 rule.
-
-                old_iter = self.iter.clone();
-                let mut prev = current;
-
-                current = self.iter.next();
-                if current.is_none() {
-                    // EOF
-                    self.current_pos_data = None;
-                    return Some(self.len);
-                }
-
-                state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                loop {
-                    if state != NU && state != SY && state != IS {
-                        break;
-                    }
-                    old_iter = self.iter.clone();
-                    prev = current;
-                    current = self.iter.next();
-                    if current.is_none() {
-                        // EOF
-                        self.current_pos_data = None;
-                        return Some(self.len);
-                    }
-                    state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                }
-
-                if state == CL || state == CP {
-                    old_iter = self.iter.clone();
-                    prev = current;
-
-                    current = self.iter.next();
-                    if current.is_none() {
-                        // EOF
-                        self.current_pos_data = None;
-                        return Some(self.len);
-                    }
-                    state = self.get_linebreak_property_with_rule(current.unwrap().1);
-                }
-
-                if state == PR || state == PO {
-                    self.current_pos_data = current;
-                    // Continue LB25 rule
-                    return self.handle_lb25();
-                }
-                // Restore iterator that is NU/CL/CP position.
-                self.iter = old_iter;
-                self.current_pos_data = prev;
-                return None;
             }
 
             // UAX14 doesn't define line break rules for some languages such as Thai.
@@ -627,10 +531,7 @@ impl<'a> LineBreakIterator<'a> {
     }
 
     #[cfg(all(target_os = "android", feature = "platform_fallback"))]
-    fn get_line_break_by_platform_fallback(
-        &mut self,
-        input: &[u16],
-    ) -> Vec<usize> {
+    fn get_line_break_by_platform_fallback(&mut self, input: &[u16]) -> Vec<usize> {
         if !self.env.is_null() {
             if let Some(mut ret) = get_line_break_utf16(self.env, input) {
                 ret.push(text.len());
@@ -641,16 +542,34 @@ impl<'a> LineBreakIterator<'a> {
     }
 
     #[cfg(not(all(target_os = "android", feature = "platform_fallback")))]
-    fn get_line_break_by_platform_fallback(
-        &mut self,
-        input: &[u16],
-    ) -> Vec<usize> {
+    fn get_line_break_by_platform_fallback(&mut self, input: &[u16]) -> Vec<usize> {
         if let Some(mut ret) = get_line_break_utf16(input) {
             ret.push(input.len());
             return ret;
         }
         [input.len()].to_vec()
     }
+
+    /*
+        fn handle_complex_language(&mut self, left_codepoint: char) -> Option<usize> {
+            let start_iter = self.iter.clone();
+            let start_point = self.current_pos_data;
+            loop {
+                self.current_pos_data = self.iter.next();
+                if self.current_pos_data.is_none() {
+                    break;
+                }
+                if !self.use_complex_breaking(self.current_pos_data.unwrap().1) {
+                    break;
+                }
+            }
+            if let Some(mut breaks) = get_line_break_utf8(&str) {
+                breaks.push(str.len());
+                return breaks;
+            }
+            [str.len_utf8()].to_vec()
+        }
+    */
 
     /// Set JNI env for Android
     #[cfg(target_os = "android")]
@@ -744,10 +663,7 @@ impl<'a> LineBreakIteratorLatin1<'a> {
         false
     }
 
-    fn get_line_break_by_platform_fallback(
-        &mut self,
-        _input: &[u16],
-    ) -> Vec<usize> {
+    fn get_line_break_by_platform_fallback(&mut self, _input: &[u16]) -> Vec<usize> {
         panic!("not reachable");
     }
 }
@@ -855,10 +771,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     }
 
     #[cfg(all(target_os = "android", feature = "platform_fallback"))]
-    fn get_line_break_by_platform_fallback(
-        &mut self,
-        input: &[u16],
-    ) -> Vec<usize> {
+    fn get_line_break_by_platform_fallback(&mut self, input: &[u16]) -> Vec<usize> {
         if !self.env.is_null() {
             if let Some(mut ret) = get_line_break_utf16(self.env, input) {
                 ret.push(input.len());
@@ -869,10 +782,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     }
 
     #[cfg(not(all(target_os = "android", feature = "platform_fallback")))]
-    fn get_line_break_by_platform_fallback(
-        &mut self,
-        input: &[u16],
-    ) -> Vec<usize> {
+    fn get_line_break_by_platform_fallback(&mut self, input: &[u16]) -> Vec<usize> {
         if let Some(mut ret) = get_line_break_utf16(input) {
             ret.push(input.len());
             return ret;

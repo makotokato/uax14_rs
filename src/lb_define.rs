@@ -45,10 +45,18 @@ pub const ZWJ: u8 = 44;
 pub const B2_SP: u8 = 45;
 pub const CL_CP_SP: u8 = 46;
 pub const HL_HY: u8 = 47;
-pub const QU_SP: u8 = 48;
-pub const RI_RI: u8 = 49;
-pub const PROP_COUNT: usize = 49;
+pub const LB25_HY: u8 = 48;
+pub const LB25_OP: u8 = 49;
+pub const LB25_NU_IS: u8 = 50;
+pub const LB25_NU_SY: u8 = 51;
+pub const LB25_NU_CL: u8 = 52;
+pub const LB25_NU_CP: u8 = 53;
+pub const QU_SP: u8 = 54;
+pub const RI_RI: u8 = 55;
+pub const EOT: u8 = 56;
+pub const PROP_COUNT: usize = 56;
 
 #[allow(dead_code)]
 pub const BREAK_RULE: i8 = -128;
+pub const PREVIOUS_BREAK_RULE: i8 = -2;
 pub const KEEP_RULE: i8 = -1;

@@ -51,10 +51,11 @@ pub const LB25_NU_IS: u8 = 50;
 pub const LB25_NU_SY: u8 = 51;
 pub const LB25_NU_CL: u8 = 52;
 pub const LB25_NU_CP: u8 = 53;
-pub const QU_SP: u8 = 54;
-pub const RI_RI: u8 = 55;
-pub const EOT: u8 = 56;
-pub const PROP_COUNT: usize = 56;
+pub const OP_SP: u8 = 54;
+pub const QU_SP: u8 = 55;
+pub const RI_RI: u8 = 56;
+pub const EOT: u8 = 57;
+pub const PROP_COUNT: usize = 57;
 
 #[allow(dead_code)]
 pub const BREAK_RULE: i8 = -128;

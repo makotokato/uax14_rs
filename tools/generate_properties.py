@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+import subprocess
 
 prop = []
 rule = []
@@ -82,6 +83,7 @@ prop_type.append("LB25_NU_IS")
 prop_type.append("LB25_NU_SY")
 prop_type.append("LB25_NU_CL")
 prop_type.append("LB25_NU_CP")
+prop_type.append("OP_SP")
 prop_type.append("QU_SP")
 prop_type.append("RI_RI")
 prop_type.append("EOT")
@@ -148,8 +150,8 @@ for i in prop_type:
                 rule.append(i)
                 continue
             # (LB14)
-            if i in ("OP_OP30", "OP_EA"):
-                rule.append("OP_OP30")
+            if i in ("OP_OP30", "OP_EA", "OP_SP"):
+                rule.append("OP_SP")
                 continue
             # (LB15)
             if i in ("QU", "QU_SP"):
@@ -222,7 +224,7 @@ for i in prop_type:
             continue
 
         # LB14
-        if i in ("OP_OP30", "OP_EA"):
+        if i in ("OP_OP30", "OP_EA", "OP_SP"):
             rule.append("x")
             continue
 
@@ -437,6 +439,7 @@ with open('lb_define.rs', 'w') as prop_file:
     prop_file.write("pub const KEEP_RULE: i8 = -1;\n")
     prop_file.write("\n")
 
+# For Line break property
 with open('properties_defines.rs', 'w') as properties_file:
     properties_file.write("use crate::lb_define::*;\n\n")
 
@@ -459,6 +462,7 @@ with open('properties_defines.rs', 'w') as properties_file:
 
         table.append("UAX14_PROPERTIES_%s" % str(a))
 
+# For Line break property
 with open('properties_other.rs', 'w') as properties_file:
     properties_file.write("use crate::lb_define::*;\n\n")
 
@@ -471,6 +475,7 @@ with open('properties_other.rs', 'w') as properties_file:
             properties_file.write("\n");
         properties_file.write("];\n\n");
 
+# For Line break property
 with open('property_table.rs', 'w') as table_file:
     table_file.write("use crate::properties_defines::*;\n");
     table_file.write("use crate::properties_other::*;\n\n");
@@ -509,3 +514,10 @@ with open('rule_table.rs', 'w') as table_file:
             except:
                 pass
     table_file.write("];\n")
+
+
+subprocess.call(["rustfmt", "lb_define.rs"])
+subprocess.call(["rustfmt", "properties_defines.rs"])
+subprocess.call(["rustfmt", "properties_other.rs"])
+subprocess.call(["rustfmt", "property_table.rs"])
+subprocess.call(["rustfmt", "rule_table.rs"])

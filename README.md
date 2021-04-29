@@ -7,40 +7,41 @@ A line breaker that is compatible with [Unicode Standard Annex #14][UAX14] and C
 [UAX14]: http://www.unicode.org/reports/tr14/
 
 ```rust
-extern crate uax14_rs;
 use uax14_rs::LineBreakIterator;
 
 fn main () {
     let mut iter = LineBreakIterator::new("Hello World");
-    let result: Vec<usize> = iter.map(|x| x).collect();
-    println!("{}", result);
+    let result: Vec<usize> = iter.collect();
+    println!("{:?}", result);
 }
 ```
 
 With CSS property.
 ```rust
-extern crate uax14_rs;
-use uax14_rs::LineBreakIterator;
+use uax14_rs::{LineBreakIterator, LineBreakRule, WordBreakRule};
 
-fn main () {
-    let mut iter =
-        LineBreakIterator::new_with_break_rule("Hello World", LineBreakRule::Strict, WordBreakRule::BreakAll, false);
-    let result: Vec<usize> = iter.map(|x| x).collect();
-    println!("{}", result);
+fn main() {
+    let iter = LineBreakIterator::new_with_break_rule(
+        "Hello World",
+        LineBreakRule::Strict,
+        WordBreakRule::BreakAll,
+        false,
+    );
+    let result: Vec<usize> = iter.collect();
+    println!("{:?}", result);
 }
 ```
 
 Use Latin 1 string for C binding and etc.
 
 ```rust
-extern crate uax14_rs;
 use uax14_rs::LineBreakIteratorLatin1;
 
 fn main () {
     let s = "Hello World";
-    let mut iter = LineBreakIteratorLatin1::new(s.as_bytes());
-    let result: Vec<usize> = iter.map(|x| x).collect();
-    println!("{}", result);
+    let iter = LineBreakIteratorLatin1::new(s.as_bytes());
+    let result: Vec<usize> = iter.collect();
+    println!("{:?}", result);
 }
 ```
 
@@ -50,8 +51,8 @@ If using Android API (24+) for Thai,
     let s = "Hello World";
     let mut iter = LineBreakIteratorLatin1::new(s.as_bytes());
     iter.set_jni_env(env);
-    let result: Vec<usize> = iter.map(|x| x).collect();
-    println!("{}", result);
+    let result: Vec<usize> = iter.collect();
+    println!("{:?}", result);
 }
 ```
 See android-examples.

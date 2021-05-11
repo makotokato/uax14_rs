@@ -153,12 +153,9 @@ fn wordbreak_keepall() {
     let s = "한글이";
     keep_all(s, vec![9], vec![3]);
 
-    #[cfg(feature = "platform_fallback")]
-    {
-        // from css/css-text/word-break/word-break-keep-all-003.html
-        let s = "และและ";
-        keep_all(s, vec![9, 18], vec![3, 6]);
-    }
+    // from css/css-text/word-break/word-break-keep-all-003.html
+    let s = "และและ";
+    keep_all(s, vec![9, 18], vec![3, 6]);
 
     // from css/css-text/word-break/word-break-keep-all-005.html
     let s = "字\u{3000}字";
@@ -183,19 +180,20 @@ fn wordbreak_normal() {
         let s = "\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}\u{0e20}\u{0e32}\u{0e29}\u{0e32}\u{0e44}\u{0e17}\u{0e22}";
         normal(s, vec![12, 21, 33, 42], vec![4, 7, 11, 14]);
     }
+}
 
-    #[cfg(all(target_os = "macos", feature = "platform_fallback"))]
-    {
-        // from css/css-text/word-break/word-break-normal-km-000.html
-        let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
-        #[cfg(target_os = "macos")]
-        normal(_s, vec![27, 54, 81], vec![9, 18, 27]);
-    }
+#[test]
+#[ignore = "We don't have km breaking rule yet"]
+fn wordbreak_normal_km() {
+    // from css/css-text/word-break/word-break-normal-km-000.html
+    let _s = "ភាសាខ្មែរភាសាខ្មែរភាសាខ្មែរ";
+    normal(_s, vec![27, 54, 81], vec![9, 18, 27]);
+}
 
-    #[cfg(all(target_os = "macos", feature = "platform_fallback"))]
-    {
-        // from css/css-text/word-break/word-break-normal-lo-000.html
-        let _s = "ພາສາລາວພາສາລາວພາສາລາວ";
-        normal(_s, vec![12, 21, 33, 42, 54, 63], vec![4, 7, 11, 14, 18, 21]);
-    }
+#[test]
+#[ignore = "We don't have lo breaking rule yet"]
+fn wordbreak_normal_lo() {
+    // from css/css-text/word-break/word-break-normal-lo-000.html
+    let _s = "ພາສາລາວພາສາລາວພາສາລາວ";
+    normal(_s, vec![12, 21, 33, 42, 54, 63], vec![4, 7, 11, 14, 18, 21]);
 }

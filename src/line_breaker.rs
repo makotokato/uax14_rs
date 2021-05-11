@@ -471,23 +471,20 @@ impl<'a> LineBreakIterator<'a> {
             current_pos_data: None,
             result_cache: Vec::new(),
             break_rule: line_break_rule,
-            word_break_rule: word_break_rule,
-            ja_zh: ja_zh,
+            word_break_rule,
+            ja_zh,
         }
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
-        get_linebreak_property_with_rule(
-            self.current_pos_data.unwrap().1,
-            self.break_rule,
-            self.word_break_rule,
-            self.ja_zh,
+        self.get_linebreak_property_with_rule(
+            self.current_pos_data.unwrap().1
         )
     }
 
     fn get_linebreak_property_with_rule(&mut self, c: char) -> u8 {
-        get_linebreak_property_utf32_with_rule(
-            c as u32,
+        get_linebreak_property_with_rule(
+            c,
             self.break_rule,
             self.word_break_rule,
             self.ja_zh,
@@ -590,14 +587,14 @@ impl<'a> LineBreakIteratorLatin1<'a> {
             current_pos_data: None,
             result_cache: Vec::new(),
             break_rule: line_break_rule,
-            word_break_rule: word_break_rule,
-            ja_zh: ja_zh,
+            word_break_rule,
+            ja_zh,
         }
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
         // No CJ on Latin1
-        get_linebreak_property_latin1(self.current_pos_data.unwrap().1)
+        self.get_linebreak_property_with_rule(self.current_pos_data.unwrap().1)
     }
 
     fn get_linebreak_property_with_rule(&mut self, c: u8) -> u8 {
@@ -690,17 +687,14 @@ impl<'a> LineBreakIteratorUTF16<'a> {
             current_pos_data: None,
             result_cache: Vec::new(),
             break_rule: line_break_rule,
-            word_break_rule: word_break_rule,
-            ja_zh: ja_zh,
+            word_break_rule,
+            ja_zh,
         }
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
-        get_linebreak_property_utf32_with_rule(
-            self.current_pos_data.unwrap().1,
-            self.break_rule,
-            self.word_break_rule,
-            self.ja_zh,
+        self.get_linebreak_property_with_rule(
+            self.current_pos_data.unwrap().1
         )
     }
 

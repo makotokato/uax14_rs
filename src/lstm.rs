@@ -103,8 +103,8 @@ pub fn get_line_break_utf16(input: &[u16]) -> Option<Vec<usize>> {
 
 #[cfg(test)]
 mod tests {
-    use crate::lstm::get_line_break_utf8;
     use crate::lstm::get_line_break_utf16;
+    use crate::lstm::get_line_break_utf8;
 
     #[test]
     fn thai_word_break() {

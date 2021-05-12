@@ -37,6 +37,7 @@ impl Iterator for LstmSegmenterIterator {
 }
 
 impl LstmSegmenterIterator {
+    #[cfg(test)]
     pub fn new(lstm: &Lstm, input: &str) -> Self {
         let lstm_output = lstm.word_segmenter(input);
         Self {
@@ -78,6 +79,7 @@ impl LstmSegmenterIteratorUTF16 {
     }
 }
 
+#[cfg(test)]
 pub fn get_line_break_utf8(input: &str) -> Option<Vec<usize>> {
     let iter = LstmSegmenterIterator::new(&*THAI_LSTM, &input);
     let result: Vec<usize> = iter.collect();

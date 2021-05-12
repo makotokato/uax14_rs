@@ -1,5 +1,3 @@
-extern crate uax14_rs;
-
 use std::char;
 use std::fs::File;
 use std::io::prelude::*;

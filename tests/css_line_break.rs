@@ -1,5 +1,3 @@
-extern crate uax14_rs;
-
 use uax14_rs::LineBreakIterator;
 use uax14_rs::LineBreakIteratorUTF16;
 use uax14_rs::LineBreakRule;

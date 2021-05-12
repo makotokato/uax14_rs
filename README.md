@@ -45,18 +45,6 @@ fn main () {
 }
 ```
 
-If using Android API (24+) for Thai,
-```rust
-{
-    let s = "Hello World";
-    let mut iter = LineBreakIteratorLatin1::new(s.as_bytes());
-    iter.set_jni_env(env);
-    let result: Vec<usize> = iter.collect();
-    println!("{:?}", result);
-}
-```
-See android-examples.
-
 ## Generating property table
 
 Copy the following files to tools directory. Then run `generate_properties.py` in `tools` directory.

@@ -14,6 +14,7 @@
 
 mod lb_define;
 mod line_breaker;
+mod lstm;
 mod properties_defines;
 mod properties_other;
 mod property_table;
@@ -21,26 +22,6 @@ mod rule_table;
 
 #[macro_use]
 extern crate lazy_static;
-
-// platform specific breaker
-#[cfg(all(target_os = "android", feature = "platform_fallback"))]
-mod android;
-#[cfg(not(all(
-    any(
-        target_os = "macos",
-        target_os = "windows",
-        target_os = "linux",
-        target_os = "android"
-    ),
-    feature = "platform_fallback"
-)))]
-mod lstm;
-#[cfg(all(target_os = "macos", feature = "platform_fallback"))]
-mod macos;
-#[cfg(all(target_os = "linux", feature = "platform_fallback"))]
-mod pango;
-#[cfg(all(target_os = "windows", feature = "platform_fallback"))]
-mod windows;
 
 pub use crate::line_breaker::*;
 

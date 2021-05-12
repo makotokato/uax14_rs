@@ -80,7 +80,7 @@ impl LstmSegmenterIteratorUTF16 {
 
 pub fn get_line_break_utf8(input: &str) -> Option<Vec<usize>> {
     let iter = LstmSegmenterIterator::new(&*THAI_LSTM, &input);
-    let result: Vec<usize> = iter.map(|i| i).collect();
+    let result: Vec<usize> = iter.collect();
     if result.is_empty() {
         return None;
     }
@@ -92,13 +92,14 @@ pub fn get_line_break_utf16(input: &[u16]) -> Option<Vec<usize>> {
         .map(|r| r.unwrap())
         .collect();
     let iter = LstmSegmenterIteratorUTF16::new(&*THAI_LSTM, &s);
-    let result: Vec<usize> = iter.map(|i| i).collect();
+    let result: Vec<usize> = iter.collect();
     if result.is_empty() {
         return None;
     }
     Some(result)
 }
 
+#[cfg(test)]
 mod tests {
     use crate::lstm::get_line_break_utf8;
     use crate::lstm::get_line_break_utf16;

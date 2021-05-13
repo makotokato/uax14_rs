@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import re
 import subprocess
 
@@ -516,8 +517,18 @@ with open('rule_table.rs', 'w') as table_file:
     table_file.write("];\n")
 
 
-subprocess.call(["rustfmt", "lb_define.rs"])
+# Format and copy generated rs files to src directory.
+
+# properties_defines.rs, properties_other.rs and property_table.rs are Line Break property table map for UAX14
 subprocess.call(["rustfmt", "properties_defines.rs"])
+os.rename("properties_defines.rs", "../src/properties_defines.rs")
 subprocess.call(["rustfmt", "properties_other.rs"])
+os.rename("properties_other.rs", "../src/properties_other.rs")
 subprocess.call(["rustfmt", "property_table.rs"])
+os.rename("property_table.rs", "../src/property_table.rs")
+# lb_defines.rs is custom state machine defines.
+subprocess.call(["rustfmt", "lb_define.rs"])
+os.rename("lb_define.rs", "../src/lb_define.rs")
+# rule_table.rs is state machine table by UAX14
 subprocess.call(["rustfmt", "rule_table.rs"])
+os.rename("rule_table.rs", "../src/rule_table.rs")

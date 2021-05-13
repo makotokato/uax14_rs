@@ -12,7 +12,7 @@ fn run_line_break_test() {
     // no failed tests
     let failed = [];
 
-    let f = File::open("tools/LineBreakTest.txt");
+    let f = File::open("./tests/testdata/LineBreakTest.txt");
     let f = BufReader::new(f.unwrap());
     for line in f.lines() {
         let line = line.unwrap();

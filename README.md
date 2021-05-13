@@ -50,7 +50,3 @@ fn main () {
 Copy the following files to tools directory. Then run `python ./generate_properties.py` in `tools` directory. Machine generated files are moved to `src` directory.
 - <https://www.unicode.org/Public/UCD/latest/ucd/LineBreak.txt>
 - <https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt>
-
-## Run cargo test
-
-Download LineBreakTest.txt from <https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/LineBreakTest.txt>, then copy it to tools directory.

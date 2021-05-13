@@ -477,18 +477,11 @@ impl<'a> LineBreakIterator<'a> {
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
-        self.get_linebreak_property_with_rule(
-            self.current_pos_data.unwrap().1
-        )
+        self.get_linebreak_property_with_rule(self.current_pos_data.unwrap().1)
     }
 
     fn get_linebreak_property_with_rule(&mut self, c: char) -> u8 {
-        get_linebreak_property_with_rule(
-            c,
-            self.break_rule,
-            self.word_break_rule,
-            self.ja_zh,
-        )
+        get_linebreak_property_with_rule(c, self.break_rule, self.word_break_rule, self.ja_zh)
     }
 
     fn is_break_by_normal(&mut self) -> bool {
@@ -693,9 +686,7 @@ impl<'a> LineBreakIteratorUTF16<'a> {
     }
 
     fn get_linebreak_property(&mut self) -> u8 {
-        self.get_linebreak_property_with_rule(
-            self.current_pos_data.unwrap().1
-        )
+        self.get_linebreak_property_with_rule(self.current_pos_data.unwrap().1)
     }
 
     fn get_linebreak_property_with_rule(&mut self, c: u32) -> u8 {

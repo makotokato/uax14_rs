@@ -1,8 +1,6 @@
 //! A line breaking iterator of [Unicode Standard Annex #14](http://www.unicode.org/reports/tr14/) compatible rules.
 //!
 //! ```rust
-//! extern crate uax14_rs;
-//!
 //! use uax14_rs::LineBreakIterator;
 //!
 //! fn main() {

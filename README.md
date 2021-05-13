@@ -54,7 +54,3 @@ Copy the following files to tools directory. Then run `python ./generate_propert
 ## Run cargo test
 
 Download LineBreakTest.txt from <https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/LineBreakTest.txt>, then copy it to tools directory.
-
-## TODO
-
-Migrate <https://github.com/unicode-org/lstm_word_segmentation> instead of platform API.

@@ -35,6 +35,4 @@ jobs:
     - name: Build
       run: cargo build --target ${{ matrix.target }} --verbose
     - name: Run tests
-      run: |
-        curl https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/LineBreakTest.txt -o tools/LineBreakTest.txt
-        cargo test --verbose
+      run: cargo test --verbose
